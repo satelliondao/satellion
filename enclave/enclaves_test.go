@@ -5,27 +5,20 @@ import (
 	"testing"
 )
 
-// createTestEnclave creates an enclave with isolated storage for testing
 func createTestEnclave(key string) *Enclave {
-	// Create a temporary directory for this test
 	tempDir, err := os.MkdirTemp("", "satellion-test-*")
 	if err != nil {
 		panic(err)
 	}
 	
-	// Create enclave with custom storage path
 	enclave := &Enclave{
 		decryptionKey: key,
 		storagePath:   tempDir,
 	}
-	
-	// Ensure storage directory exists
 	os.MkdirAll(tempDir, 0700)
-	
 	return enclave
 }
 
-// cleanupTestEnclave removes the test enclave storage
 func cleanupTestEnclave(enclave *Enclave) {
 	os.RemoveAll(enclave.storagePath)
 }
@@ -49,30 +42,25 @@ func TestEncryptDecrypt(t *testing.T) {
 	enclave := createTestEnclave("test-encryption-key")
 	defer cleanupTestEnclave(enclave)
 	
-	// Test data
-	originalData := []byte("This is a test message that should be encrypted and decrypted")
+	data := []byte("This is a test message that should be encrypted and decrypted")
 	
-	// Encrypt
-	encryptedData, err := enclave.encrypt(originalData)
+	encryptedData, err := enclave.encrypt(data)
 	if err != nil {
 		t.Fatalf("Failed to encrypt data: %v", err)
 	}
 	
-	// Verify encrypted data is different from original
-	if string(encryptedData) == string(originalData) {
+	if string(encryptedData) == string(data) {
 		t.Error("Encrypted data should be different from original data")
 	}
 	
-	// Decrypt
 	decryptedData, err := enclave.decrypt(encryptedData)
 	if err != nil {
 		t.Fatalf("Failed to decrypt data: %v", err)
 	}
 	
-	// Verify decrypted data matches original
-	if string(decryptedData) != string(originalData) {
+	if string(decryptedData) != string(data) {
 		t.Errorf("Decrypted data doesn't match original. Expected: %s, Got: %s", 
-			string(originalData), string(decryptedData))
+			string(data), string(decryptedData))
 	}
 }
 
@@ -80,28 +68,23 @@ func TestSaveLoad(t *testing.T) {
 	enclave := createTestEnclave("test-save-load-key")
 	defer cleanupTestEnclave(enclave)
 	
-	// Test data
 	testData := []byte("Test data for save/load operations")
 	testKey := "test-key"
 	
-	// Save data
 	err := enclave.Save(testKey, testData)
 	if err != nil {
 		t.Fatalf("Failed to save data: %v", err)
 	}
 	
-	// Check if file exists
 	if !enclave.Exists(testKey) {
 		t.Error("Saved data should exist")
 	}
 	
-	// Load data
 	loadedData, err := enclave.Load(testKey)
 	if err != nil {
 		t.Fatalf("Failed to load data: %v", err)
 	}
 	
-	// Verify loaded data matches original
 	if string(loadedData) != string(testData) {
 		t.Errorf("Loaded data doesn't match original. Expected: %s, Got: %s", 
 			string(testData), string(loadedData))

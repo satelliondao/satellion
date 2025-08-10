@@ -16,19 +16,6 @@ var RootCmd = &cobra.Command{
 	},
 }
 
-var InitCmd = &cobra.Command{
-	Use:   "init",
-	Short: "Initialize wallet - create new or import from seed phrase",
-	Long: `Initialize your wallet by either:
-1. Creating a new wallet with a random seed phrase
-2. Importing an existing wallet using a seed phrase`,
-	Run: func(cmd *cobra.Command, args []string) {
-		walletManager := NewWalletManager()
-		walletManager.InitializeWallet()
-	},
-}
-
-// NewCmd generates a new wallet
 var NewCmd = &cobra.Command{
 	Use:   "new",
 	Short: "Generate a new wallet with random seed phrase",
@@ -100,7 +87,6 @@ for operations when no specific wallet is specified.`,
 }
 
 func SetupCommands() {
-	RootCmd.AddCommand(InitCmd)
 	RootCmd.AddCommand(NewCmd)
 	RootCmd.AddCommand(ImportCmd)
 	RootCmd.AddCommand(ShowCmd)

@@ -18,14 +18,12 @@ type Enclave struct {
 }
 
 func NewEnclave(decryptionKey string) *Enclave {
-	// Create storage directory in user's home directory
 	homeDir, err := os.UserHomeDir()
 	if err != nil {
 		homeDir = "."
 	}
 	storagePath := filepath.Join(homeDir, ".satellion", "enclave")
 	
-	// Ensure storage directory exists
 	os.MkdirAll(storagePath, 0700)
 	return &Enclave{
 		decryptionKey: decryptionKey,
@@ -48,7 +46,6 @@ func (e *Enclave) generateNonce() ([]byte, error) {
 	return nonce, nil
 }
 
-// encrypt encrypts data using AES-GCM
 func (e *Enclave) encrypt(data []byte) ([]byte, error) {
 	key := e.deriveKey()
 	block, err := aes.NewCipher(key)
@@ -71,7 +68,6 @@ func (e *Enclave) encrypt(data []byte) ([]byte, error) {
 	return ciphertext, nil
 }
 
-// decrypt decrypts data using AES-GCM
 func (e *Enclave) decrypt(encryptedData []byte) ([]byte, error) {
 	key := e.deriveKey()
 	block, err := aes.NewCipher(key)
@@ -101,15 +97,12 @@ func (e *Enclave) decrypt(encryptedData []byte) ([]byte, error) {
 	return plaintext, nil
 }
 
-// getFilePath returns the full path for a given key
 func (e *Enclave) getFilePath(key string) string {
-	// Hash the key to create a safe filename
 	hash := sha256.Sum256([]byte(key))
 	filename := hex.EncodeToString(hash[:]) + ".enc"
 	return filepath.Join(e.storagePath, filename)
 }
 
-// Save encrypts and saves data to disk
 func (e *Enclave) Save(key string, data []byte) error {
 	encryptedData, err := e.encrypt(data)
 	if err != nil {
@@ -125,7 +118,6 @@ func (e *Enclave) Save(key string, data []byte) error {
 	return nil
 }
 
-// Load decrypts and loads data from disk
 func (e *Enclave) Load(key string) ([]byte, error) {
 	filePath := e.getFilePath(key)
 	
@@ -145,7 +137,6 @@ func (e *Enclave) Load(key string) ([]byte, error) {
 	return decryptedData, nil
 }
 
-// Delete removes encrypted data from disk
 func (e *Enclave) Delete(key string) error {
 	filePath := e.getFilePath(key)
 	
@@ -160,7 +151,6 @@ func (e *Enclave) Delete(key string) error {
 	return nil
 }
 
-// List returns all available keys in storage
 func (e *Enclave) List() ([]string, error) {
 	files, err := os.ReadDir(e.storagePath)
 	if err != nil {
@@ -179,19 +169,16 @@ func (e *Enclave) List() ([]string, error) {
 	return keys, nil
 }
 
-// Exists checks if a key exists in storage
 func (e *Enclave) Exists(key string) bool {
 	filePath := e.getFilePath(key)
 	_, err := os.Stat(filePath)
 	return err == nil
 }
 
-// GetStoragePath returns the current storage path
 func (e *Enclave) GetStoragePath() string {
 	return e.storagePath
 }
 
-// not found error
 type NotFoundError struct {
 	Key string
 }
