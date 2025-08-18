@@ -33,3 +33,4 @@ go.work.sum
 satellion.db
 neutrino/
 bin
+.DS_Store
