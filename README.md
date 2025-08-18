@@ -46,3 +46,6 @@ BIP157 and BIP158 together define a privacy-focused, efficient protocol for ligh
 
 **Adoption**
 - Used by wallets such as Lightning Labs’ Neutrino, BTCPay Server mobile apps, and several Lightning Network wallets.
+
+### Roadmap
+![Roadmap](roadmap.excalidraw.png)
