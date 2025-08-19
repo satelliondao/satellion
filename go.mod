@@ -37,4 +37,5 @@ require (
 	go.etcd.io/bbolt v1.3.11 // indirect
 	golang.org/x/crypto v0.22.0 // indirect
 	golang.org/x/sys v0.35.0 // indirect
+	golang.org/x/term v0.34.0 // indirect
 )

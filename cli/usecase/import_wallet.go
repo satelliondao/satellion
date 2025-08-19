@@ -7,27 +7,22 @@ import (
 	"strings"
 	"time"
 
+	"github.com/satelliondao/satellion/cli/palette"
+	prompt "github.com/satelliondao/satellion/cli/promt"
 	"github.com/satelliondao/satellion/ports"
 )
 
 func (wm *Router) ImportWalletFromSeed() {
-	fmt.Print(`
-📥 Import HD Wallet from Seed Phrase
-Enter your 12-word seed phrase:
-Seed phrase: `)
-
 	reader := bufio.NewReader(os.Stdin)
-	seedPhrase, _ := reader.ReadString('\n')
-	seedPhrase = strings.TrimSpace(seedPhrase)
-
-	if seedPhrase == "" {
-		fmt.Println("❌ Seed phrase cannot be empty")
+	mnemonic, err := prompt.ProvideMnemonic()
+	if err != nil {
+		palette.Error.Printf("Failed to read mnemonic: %v\n", err)
 		return
 	}
 
-	hdWallet, err := createHDWalletFromSeed(seedPhrase)
+	hdWallet, err := createHDWalletFromSeed(string(mnemonic))
 	if err != nil {
-		fmt.Printf("❌ Failed to create HD wallet from seed phrase: %v\n", err)
+		palette.Error.Printf("Failed to create HD wallet from seed phrase: %v\n", err)
 		return
 	}
 
@@ -51,13 +46,10 @@ Seed phrase: `)
 
 	err = wm.walletRepo.AddWallet(walletInfo)
 	if err != nil {
-		fmt.Printf("❌ Failed to add wallet to list: %v\n", err)
+		palette.Error.Printf("Failed to add wallet to list: %v\n", err)
 		return
 	}
 
 	DisplayHDWalletInfo(hdWallet)
-	fmt.Printf(`
-✅ HD wallet '%s' imported and saved securely!
-🔄 Each transaction will use a new address for enhanced privacy.
-`, walletName)
+	palette.Success.Printf("HD wallet '%s' imported and saved securely!", walletName)
 }
