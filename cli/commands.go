@@ -7,9 +7,13 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/satelliondao/satellion/cfg"
 	"github.com/satelliondao/satellion/chain"
+	"github.com/satelliondao/satellion/cli/usecase"
 	"github.com/spf13/cobra"
 )
+
+var router = usecase.NewRouter()
 
 var RootCmd = &cobra.Command{
 	Use:   "satellion",
@@ -26,8 +30,7 @@ var NewCmd = &cobra.Command{
 	Long: `Generate a new wallet with a cryptographically secure random seed phrase.
 The seed phrase will be displayed once - make sure to write it down safely!`,
 	Run: func(cmd *cobra.Command, args []string) {
-		walletManager := NewWalletManager()
-		walletManager.GenerateNewWallet()
+		router.GenerateNewWallet()
 	},
 }
 
@@ -38,8 +41,7 @@ var ImportCmd = &cobra.Command{
 	Long: `Import an existing wallet using a 12-word seed phrase.
 Make sure you're in a secure environment when entering your seed phrase.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		walletManager := NewWalletManager()
-		walletManager.ImportWalletFromSeed()
+		router.ImportWalletFromSeed()
 	},
 }
 
@@ -49,8 +51,7 @@ var ShowCmd = &cobra.Command{
 	Long: `Display the current wallet's address, public key, and seed phrase.
 The private key is stored securely and not displayed by default.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		walletManager := NewWalletManager()
-		walletManager.ShowWalletInfo()
+		router.ShowWalletInfo()
 	},
 }
 
@@ -61,8 +62,7 @@ var ListCmd = &cobra.Command{
 	Long: `Display a list of all available wallets with their names, addresses, and creation dates.
 The default wallet is marked with a star.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		walletManager := NewWalletManager()
-		walletManager.ListWallets()
+		router.ListWallets()
 	},
 }
 
@@ -73,8 +73,7 @@ var RemoveCmd = &cobra.Command{
 	Long: `Remove a wallet from the system. This will permanently delete the wallet's
 private key and remove it from the wallet list. This action cannot be undone.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		walletManager := NewWalletManager()
-		walletManager.RemoveWallet()
+		router.RemoveWallet()
 	},
 }
 
@@ -85,8 +84,7 @@ var DefaultCmd = &cobra.Command{
 	Long: `Set a wallet as the default wallet. The default wallet will be used
 for operations when no specific wallet is specified.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		walletManager := NewWalletManager()
-		walletManager.SetDefaultWallet()
+		router.SetDefaultWallet()
 	},
 }
 
@@ -96,7 +94,7 @@ var SyncCmd = &cobra.Command{
 	Short: "Start Neutrino and sync headers",
 	Long:  `Start a Neutrino light client and continuously print the best known block while syncing.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		var cfg Config
+		var cfg cfg.Config
 		loaded, err := cfg.Load()
 		if err != nil {
 			fmt.Println("failed to load config:", err)

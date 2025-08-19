@@ -1,4 +1,4 @@
-package db
+package walletdb
 
 import (
 	"os"
@@ -14,7 +14,7 @@ func NewWalletDB() (walletdb.DB, error) {
 	return walletdb.Create("bdb", "satellion.db", true, 60*time.Second, false)
 }
 
-func OpenOrCreate(path string) (walletdb.DB, error) {
+func Open(path string) (walletdb.DB, error) {
 	_, statErr := os.Stat(path)
 	if os.IsNotExist(statErr) {
 		return walletdb.Create("bdb", path, true, 60*time.Second, false)

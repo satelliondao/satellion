@@ -8,7 +8,7 @@ import (
 	"github.com/btcsuite/btcd/chaincfg"
 	n "github.com/lightninglabs/neutrino"
 	"github.com/lightninglabs/neutrino/headerfs"
-	"github.com/satelliondao/satellion/db"
+	"github.com/satelliondao/satellion/walletdb"
 )
 
 type ChainService struct {
@@ -33,7 +33,7 @@ func NewChainServiceWithPeers(
 	}
 
 	walletDBPath := filepath.Join(dataDir, "neutrino.db")
-	boltDB, err := db.OpenOrCreate(walletDBPath)
+	boltDB, err := walletdb.Open(walletDBPath)
 	if err != nil {
 		log.Fatal("failed to open neutrino db: ", err)
 	}
