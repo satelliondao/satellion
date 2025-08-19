@@ -1,28 +1,31 @@
 package chain
 
 import (
+	"fmt"
 	"log"
 	"os"
+	"os/signal"
 	"path/filepath"
+	"syscall"
+	"time"
 
 	"github.com/btcsuite/btcd/chaincfg"
-	n "github.com/lightninglabs/neutrino"
+	"github.com/fatih/color"
+	"github.com/lightninglabs/neutrino"
 	"github.com/lightninglabs/neutrino/headerfs"
+	"github.com/satelliondao/satellion/cfg"
+	"github.com/satelliondao/satellion/utils/term"
 	"github.com/satelliondao/satellion/walletdb"
 )
 
-type ChainService struct {
-	Chain *n.ChainService
+type Chain struct {
+	chainService *neutrino.ChainService
+	cfg *cfg.Config
 }
 
-func NewChainService(
-) *ChainService {
-	panic("use NewChainServiceWithPeers instead")
-}
-
-func NewChainServiceWithPeers(
-	peers []string,
-) *ChainService {
+func NewChain(
+	cfg *cfg.Config,
+) *Chain {
 	home, err := os.UserHomeDir()
 	if err != nil {
 		home = "."
@@ -31,36 +34,74 @@ func NewChainServiceWithPeers(
 	if err := os.MkdirAll(dataDir, 0o755); err != nil {
 		log.Fatal("failed to create data dir: ", err)
 	}
-
 	walletDBPath := filepath.Join(dataDir, "neutrino.db")
 	boltDB, err := walletdb.Open(walletDBPath)
 	if err != nil {
 		log.Fatal("failed to open neutrino db: ", err)
 	}
-
-	chainService, err := n.NewChainService(n.Config{
+	chainService, err := neutrino.NewChainService(neutrino.Config{
 		DataDir:     dataDir,
 		Database:    boltDB,
 		ChainParams: chaincfg.MainNetParams,
-		AddPeers:    peers,
+		AddPeers:    cfg.Peers,
 	})
 	if err != nil {
 		log.Fatal(`failed to create chain service: `, err)
 	}
-	return &ChainService{
-		Chain: chainService,
+	return &Chain{
+		chainService: chainService,
+		cfg: cfg,
 	}
 }
 
-func (c *ChainService) BestBlock() (*headerfs.BlockStamp, error) {
-	return c.Chain.BestBlock()
+func (c *Chain) BestBlock() (*headerfs.BlockStamp, error) {
+	return c.chainService.BestBlock()
 }
 
-func (c *ChainService) Start() error {
-	return c.Chain.Start()
+func (c *Chain) Sync() error {
+	if err := c.chainService.Start(); err != nil {
+		return err
+	}
+	defer func() { _ = c.chainService.Stop() }()
+	sigCh := make(chan os.Signal, 1)
+	signal.Notify(sigCh, os.Interrupt, syscall.SIGTERM)
+	ticker := time.NewTicker(1 * time.Second)
+	defer ticker.Stop()
+	for {
+		select {
+		case <-ticker.C:
+			stamp, err := c.chainService.BestBlock()
+			if err != nil {
+				term.PrintfInline("best block error: %v\n", err)
+				continue
+			}
+			term.PrintfInline("best height=%d time=%s peers=%d", stamp.Height, stamp.Timestamp.UTC().Format(time.RFC3339), c.chainService.ConnectedCount())
+
+			if int(c.chainService.ConnectedCount()) >= c.cfg.MinPeers {
+				isCurrent := false
+				type isCurrentCap interface{ IsCurrent() bool }
+				if v, ok := interface{}(c.chainService).(isCurrentCap); ok {
+					isCurrent = v.IsCurrent()
+				} else {
+					if time.Since(stamp.Timestamp) < 10*time.Minute {
+						isCurrent = true
+					}
+				}
+				if isCurrent {
+					green := color.New(color.FgGreen)
+					green.Println("\nSynchronization complete, head at height", stamp.Height)
+					return nil
+				}
+			}
+		case <-sigCh:
+			term.Newline()
+			fmt.Println("shutting down...")
+			return nil
+		}
+	}
 }
 
-func (c *ChainService) Stop() error {
-	return c.Chain.Stop()
+func (c *Chain) Stop() error {
+	return c.chainService.Stop()
 }
 
