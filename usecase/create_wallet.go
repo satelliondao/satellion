@@ -7,7 +7,7 @@ import (
 	"strings"
 
 	prompt "github.com/satelliondao/satellion/cli/promt"
-	"github.com/satelliondao/satellion/cli/stdout"
+	"github.com/satelliondao/satellion/stdout"
 	"github.com/satelliondao/satellion/utils/term"
 )
 

@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/satelliondao/satellion/cli/usecase"
+	"github.com/satelliondao/satellion/usecase"
 	"github.com/spf13/cobra"
 )
 

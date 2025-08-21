@@ -4,8 +4,8 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 
-	"github.com/satelliondao/satellion/cli/stdout"
 	"github.com/satelliondao/satellion/ports"
+	"github.com/satelliondao/satellion/stdout"
 )
 
 func DisplayWalletInfo(hdWallet *ports.HDWallet) {

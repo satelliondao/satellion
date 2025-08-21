@@ -8,8 +8,8 @@ import (
 	"os"
 	"strings"
 
-	"github.com/satelliondao/satellion/cli/stdout"
 	"github.com/satelliondao/satellion/mnemonic"
+	"github.com/satelliondao/satellion/stdout"
 	"golang.org/x/term"
 )
 
