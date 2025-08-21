@@ -8,7 +8,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/satelliondao/satellion/cli/palette"
+	"github.com/satelliondao/satellion/cli/stdout"
 	"github.com/satelliondao/satellion/mnemonic"
 	"golang.org/x/term"
 )
@@ -16,20 +16,20 @@ import (
 var validator = mnemonic.NewValidator()
 
 // ProvideMnemonic prompts for a 12-word BIP39 mnemonic and returns it as bytes.
-func ProvideMnemonic() ([]byte, error) {
+func ProvideMnemonic() (*mnemonic.Mnemonic, error) {
 	reader := bufio.NewReader(os.Stdin)
 	for {
-		palette.Question.Println("Enter 12-word BIP39 mnemonic: ")
+		stdout.Question.Println("Enter 12-word BIP39 mnemonic: ")
 		line, err := reader.ReadString('\n')
 		if err != nil {
 			return nil, err
 		}
 		if err := validator.Validate(line); err != nil {
-			palette.Error.Println("Invalid mnemonic:", err)
+			stdout.Error.Println("Invalid mnemonic:", err)
 			continue
 		}
 		normalized := validator.Normalize(line)
-		return []byte(strings.Join(normalized, " ")), nil
+		return mnemonic.New(normalized), nil
 	}
 }
 
@@ -38,7 +38,7 @@ func ProvideMnemonic() ([]byte, error) {
 func ProvidePrivPassphrase() ([]byte, error) {
 	prompt := "Enter the private passphrase of your wallet: "
 	for {
-		palette.Question.Print(prompt)
+		stdout.Question.Print(prompt)
 		pass, err := term.ReadPassword(int(os.Stdin.Fd()))
 		if err != nil {
 			return nil, err
@@ -140,11 +140,11 @@ func promptPass(_ *bufio.Reader, prefix string, confirm bool) ([]byte, error) {
 	}
 }
 
-func VerifyMnemonicSaved(mnemonic string) bool {
+func VerifyMnemonicSaved(mnemonic *mnemonic.Mnemonic) bool {
 	reader := bufio.NewReader(os.Stdin)
-	words := validator.Normalize(mnemonic)
+	words := mnemonic.Words
 	if len(words) != 12 {
-		palette.Error.Println("Seed phrase must be 12 words")
+		stdout.Error.Println("Seed phrase must be 12 words")
 		return false
 	}
 	fmt.Print("\033[2J\033[3J\033[H")
@@ -160,10 +160,10 @@ func VerifyMnemonicSaved(mnemonic string) bool {
 			asked[i] = struct{}{}
 			indices = append(indices, i)
 		}
-		palette.Question.Println("Verify your seed phrase. Enter the requested words exactly as saved.")
+		stdout.Question.Println("Verify your seed phrase. Enter the requested words exactly as saved.")
 		correct := true
 		for _, idx := range indices {
-			palette.Question.Printf("Word #%d: ", idx)
+			stdout.Question.Printf("Word #%d: ", idx)
 			line, err := reader.ReadString('\n')
 			if err != nil {
 				return false
@@ -174,14 +174,14 @@ func VerifyMnemonicSaved(mnemonic string) bool {
 			}
 		}
 		if correct {
-			palette.Success.Println("Seed phrase verification passed.")
+			stdout.Success.Println("Seed phrase verification passed.")
 			return true
 		}
 		attempts++
 		if attempts >= 3 {
-			palette.Error.Println("Verification failed. Please back up your seed phrase and try again.")
+			stdout.Error.Println("Verification failed. Please back up your seed phrase and try again.")
 			return false
 		}
-		palette.Warning.Println("One or more answers were incorrect. Let's try again.")
+		stdout.Warning.Println("One or more answers were incorrect. Let's try again.")
 	}
 }

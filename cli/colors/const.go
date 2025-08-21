@@ -1,4 +1,4 @@
-package palette
+package stdout
 
 import "github.com/fatih/color"
 

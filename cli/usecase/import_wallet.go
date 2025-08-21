@@ -7,8 +7,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/satelliondao/satellion/cli/palette"
 	prompt "github.com/satelliondao/satellion/cli/promt"
+	"github.com/satelliondao/satellion/cli/stdout"
 	"github.com/satelliondao/satellion/ports"
 )
 
@@ -16,13 +16,13 @@ func (wm *Router) ImportWalletFromSeed() {
 	reader := bufio.NewReader(os.Stdin)
 	mnemonic, err := prompt.ProvideMnemonic()
 	if err != nil {
-		palette.Error.Printf("Failed to read mnemonic: %v\n", err)
+		stdout.Error.Printf("Failed to read mnemonic: %v\n", err)
 		return
 	}
 
-	hdWallet, err := createHDWalletFromSeed(string(mnemonic))
+	wallet, err := createHDWalletFromSeed(mnemonic)
 	if err != nil {
-		palette.Error.Printf("Failed to create HD wallet from seed phrase: %v\n", err)
+		stdout.Error.Printf("Failed to create HD wallet from seed phrase: %v\n", err)
 		return
 	}
 
@@ -35,21 +35,21 @@ func (wm *Router) ImportWalletFromSeed() {
 	}
 
 	walletInfo := ports.WalletInfo{
-		ID:          hdWallet.MasterAddress, // Use master address as ID
+		ID:          wallet.MasterAddress, // Use master address as ID
 		Name:        walletName,
-		Address:     hdWallet.MasterAddress,
+		Address:     wallet.MasterAddress,
 		CreatedAt:   time.Now().Format(time.RFC3339),
 		IsDefault:   false,
-		NextIndex:   hdWallet.NextIndex,
-		UsedIndexes: hdWallet.UsedIndexes,
+		NextIndex:   wallet.NextIndex,
+		UsedIndexes: wallet.UsedIndexes,
 	}
 
 	err = wm.walletRepo.AddWallet(walletInfo)
 	if err != nil {
-		palette.Error.Printf("Failed to add wallet to list: %v\n", err)
+		stdout.Error.Printf("Failed to add wallet to list: %v\n", err)
 		return
 	}
 
-	DisplayWalletInfo(hdWallet)
-	palette.Success.Printf("HD wallet '%s' imported and saved securely!", walletName)
+	DisplayWalletInfo(wallet)
+	stdout.Success.Printf("HD wallet '%s' imported and saved securely!", walletName)
 }

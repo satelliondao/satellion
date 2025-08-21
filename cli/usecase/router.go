@@ -27,7 +27,7 @@ func genNewWallet() *ports.HDWallet {
 	masterPrivateKey := "0x" + hex.EncodeToString([]byte(fmt.Sprintf("master_key_%d", time.Now().UnixNano())))
 	// Generate master address from private key
 	masterAddress := DeriveAddressFromPrivateKey(masterPrivateKey)
-	mnemonic := mnemonic.New()
+	mnemonic := mnemonic.NewRandom()
 	return &ports.HDWallet{
 		MasterPrivateKey: masterPrivateKey,
 		MasterPublicKey:  "0x" + hex.EncodeToString([]byte("master_public_key")),

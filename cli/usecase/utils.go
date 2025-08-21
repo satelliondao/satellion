@@ -4,12 +4,12 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 
-	"github.com/satelliondao/satellion/cli/palette"
+	"github.com/satelliondao/satellion/cli/stdout"
 	"github.com/satelliondao/satellion/ports"
 )
 
 func DisplayWalletInfo(hdWallet *ports.HDWallet) {
-palette.Trace.Printf(`
+stdout.Trace.Printf(`
 Next Address Index: %d
 Used Addresses: %d
 ⚠️  Keep your seed phrase safe and private!

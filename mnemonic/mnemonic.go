@@ -12,9 +12,13 @@ type Mnemonic struct {
 	Words []string
 }
 
-func New() *Mnemonic {
+func New(words []string) *Mnemonic {
+	return &Mnemonic{
+		Words: words,
+	}
+}
 
-
+func NewRandom() *Mnemonic {
 	out := make([]string, 12)
 	max := big.NewInt(int64(len(mnemonic.EnWordList)))
 	for i := 0; i < 12; i++ {
