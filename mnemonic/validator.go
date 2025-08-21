@@ -2,8 +2,9 @@ package mnemonic
 
 import (
 	"fmt"
-	"os"
 	"strings"
+
+	mnemonic "github.com/satelliondao/satellion/mnemonic/wordlist"
 )
 
 type Validator struct {
@@ -11,14 +12,9 @@ type Validator struct {
 }
 
 func NewValidator() *Validator {
-	wordList, err := os.ReadFile("bip39/english.txt")
-	if err != nil {
-		panic("Bip39 word list not found")
-	}
-
 	wordmap  := make(map[string]struct{})
-	for _, word := range strings.Split(string(wordList), "\n") {
-		wordmap[strings.TrimSpace(word)] = struct{}{}
+	for _, word := range mnemonic.EnWordList {
+		wordmap[word] = struct{}{}
 	}
 	return &Validator{
 		wordmap: wordmap,
