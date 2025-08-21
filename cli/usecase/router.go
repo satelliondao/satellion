@@ -8,6 +8,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/satelliondao/satellion/bip39"
 	"github.com/satelliondao/satellion/persistence"
 	"github.com/satelliondao/satellion/ports"
 )
@@ -22,13 +23,12 @@ func NewRouter() *Router {
 	}
 }
 
-func generateNewHDWallet() *ports.HDWallet {
+func genNewWallet() *ports.HDWallet {
 	// Generate a master private key (in real implementation, this would use BIP32/BIP39)
 	masterPrivateKey := "0x" + hex.EncodeToString([]byte(fmt.Sprintf("master_key_%d", time.Now().UnixNano())))
 	// Generate master address from private key
 	masterAddress := DeriveAddressFromPrivateKey(masterPrivateKey)
-	// Generate seed phrase (simplified - in real implementation would use BIP39)
-	seedPhrase := "abandon ability able about above absent absorb abstract absurd abuse access accident"
+	seedPhrase := bip39.GenMnemonic()
 	return &ports.HDWallet{
 		MasterPrivateKey: masterPrivateKey,
 		MasterPublicKey:  "0x" + hex.EncodeToString([]byte("master_public_key")),

@@ -16,6 +16,7 @@ type WalletList struct {
 }
 
 type HDWallet struct {
+	Name             string   `json:"name"`
 	MasterPrivateKey string   `json:"master_private_key"`
 	MasterPublicKey  string   `json:"master_public_key"`
 	MasterAddress    string   `json:"master_address"`

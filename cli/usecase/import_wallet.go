@@ -50,6 +50,6 @@ func (wm *Router) ImportWalletFromSeed() {
 		return
 	}
 
-	DisplayHDWalletInfo(hdWallet)
+	DisplayWalletInfo(hdWallet)
 	palette.Success.Printf("HD wallet '%s' imported and saved securely!", walletName)
 }

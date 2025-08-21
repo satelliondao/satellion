@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"bytes"
 	"fmt"
+	"math/rand"
 	"os"
 	"strings"
 
@@ -136,5 +137,51 @@ func promptPass(_ *bufio.Reader, prefix string, confirm bool) ([]byte, error) {
 		}
 
 		return pass, nil
+	}
+}
+
+func VerifyMnemonicSaved(mnemonic string) bool {
+	reader := bufio.NewReader(os.Stdin)
+	words := validator.Normalize(mnemonic)
+	if len(words) != 12 {
+		palette.Error.Println("Seed phrase must be 12 words")
+		return false
+	}
+	fmt.Print("\033[2J\033[3J\033[H")
+	attempts := 0
+	for {
+		asked := map[int]struct{}{}
+		indices := make([]int, 0, 3)
+		for len(indices) < 3 {
+			i := rand.Intn(12) + 1
+			if _, ok := asked[i]; ok {
+				continue
+			}
+			asked[i] = struct{}{}
+			indices = append(indices, i)
+		}
+		palette.Question.Println("Verify your seed phrase. Enter the requested words exactly as saved.")
+		correct := true
+		for _, idx := range indices {
+			palette.Question.Printf("Word #%d: ", idx)
+			line, err := reader.ReadString('\n')
+			if err != nil {
+				return false
+			}
+			entered := strings.ToLower(strings.TrimSpace(line))
+			if entered != words[idx-1] {
+				correct = false
+			}
+		}
+		if correct {
+			palette.Success.Println("Seed phrase verification passed.")
+			return true
+		}
+		attempts++
+		if attempts >= 3 {
+			palette.Error.Println("Verification failed. Please back up your seed phrase and try again.")
+			return false
+		}
+		palette.Warning.Println("One or more answers were incorrect. Let's try again.")
 	}
 }
