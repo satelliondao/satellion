@@ -5,10 +5,9 @@ import (
 	"encoding/hex"
 	"fmt"
 
-	"strings"
 	"time"
 
-	"github.com/satelliondao/satellion/bip39"
+	"github.com/satelliondao/satellion/mnemonic"
 	"github.com/satelliondao/satellion/persistence"
 	"github.com/satelliondao/satellion/ports"
 )
@@ -28,31 +27,31 @@ func genNewWallet() *ports.HDWallet {
 	masterPrivateKey := "0x" + hex.EncodeToString([]byte(fmt.Sprintf("master_key_%d", time.Now().UnixNano())))
 	// Generate master address from private key
 	masterAddress := DeriveAddressFromPrivateKey(masterPrivateKey)
-	seedPhrase := bip39.GenMnemonic()
+	mnemonic := mnemonic.New()
 	return &ports.HDWallet{
 		MasterPrivateKey: masterPrivateKey,
 		MasterPublicKey:  "0x" + hex.EncodeToString([]byte("master_public_key")),
 		MasterAddress:    masterAddress,
-		SeedPhrase:       seedPhrase,
+		Mnemonic:       mnemonic,
 		NextIndex:        0,
 		UsedIndexes:      []uint32{},
 	}
 }
 
-func createHDWalletFromSeed(seedPhrase string) (*ports.HDWallet, error) {
+func createHDWalletFromSeed(mnemonic *mnemonic.Mnemonic) (*ports.HDWallet, error) {
 	// Validate seed phrase (simplified)
-	if len(strings.Split(seedPhrase, " ")) != 12 {
+	if len(mnemonic.Words) != 12 {
 		return nil, fmt.Errorf("seed phrase must be 12 words")
 	}
 	// Generate master private key from seed phrase (simplified)
-	hash := sha256.Sum256([]byte(seedPhrase))
+	hash := sha256.Sum256([]byte(mnemonic.String()))
 	masterPrivateKey := "0x" + hex.EncodeToString(hash[:])
 	masterAddress := DeriveAddressFromPrivateKey(masterPrivateKey)
 	return &ports.HDWallet{
 		MasterPrivateKey: masterPrivateKey,
 		MasterPublicKey:  "0x" + hex.EncodeToString([]byte("master_public_key")),
 		MasterAddress:    masterAddress,
-		SeedPhrase:       seedPhrase,
+		Mnemonic:       mnemonic,
 		NextIndex:        0,
 		UsedIndexes:      []uint32{},
 	}, nil

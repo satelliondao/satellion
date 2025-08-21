@@ -1,4 +1,4 @@
-package bip39
+package mnemonic
 
 import (
 	"fmt"

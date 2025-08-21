@@ -1,5 +1,7 @@
 package ports
 
+import "github.com/satelliondao/satellion/mnemonic"
+
 type WalletInfo struct {
 	ID        string `json:"id"`
 	Name      string `json:"name"`
@@ -20,7 +22,7 @@ type HDWallet struct {
 	MasterPrivateKey string   `json:"master_private_key"`
 	MasterPublicKey  string   `json:"master_public_key"`
 	MasterAddress    string   `json:"master_address"`
-	SeedPhrase       string   `json:"seed_phrase"`
+	Mnemonic         *mnemonic.Mnemonic   `json:"mnemonic"`
 	NextIndex        uint32   `json:"next_index"`
 	UsedIndexes      []uint32 `json:"used_indexes"`
 }

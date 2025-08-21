@@ -8,12 +8,12 @@ import (
 	"os"
 	"strings"
 
-	"github.com/satelliondao/satellion/bip39"
 	"github.com/satelliondao/satellion/cli/palette"
+	"github.com/satelliondao/satellion/mnemonic"
 	"golang.org/x/term"
 )
 
-var validator = bip39.NewValidator()
+var validator = mnemonic.NewValidator()
 
 // ProvideMnemonic prompts for a 12-word BIP39 mnemonic and returns it as bytes.
 func ProvideMnemonic() ([]byte, error) {

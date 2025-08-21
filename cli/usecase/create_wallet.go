@@ -23,7 +23,7 @@ func (wm *Router) GenerateNewWallet() {
 		return
 	}
 	wallet.Name = walletName
-	palette.Error.Printf("🔑 %s", wallet.SeedPhrase)
+	palette.Error.Printf("🔑 %s", wallet.Mnemonic)
 	term.Newline()
 	fmt.Println("Make sure to write down your seed phrase in a safe place")
 	palette.Warning.Println("Press enter to continue")
@@ -33,7 +33,7 @@ func (wm *Router) GenerateNewWallet() {
 	reader.ReadString('\n')
 
 
-	if !prompt.VerifyMnemonicSaved(wallet.SeedPhrase) {
+	if !prompt.VerifyMnemonicSaved(wallet.Mnemonic) {
 		palette.Error.Println("Mnemonic verification failed. Aborting.")
 		return
 	}
