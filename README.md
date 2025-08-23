@@ -25,4 +25,4 @@ Roadmaps, discussions, and funding are public. Builds are reproducible and relea
 Hierarchical Deterministic wallets (BIP32/39) with modern address standards only: SegWit (bech32) and Taproot. No legacy formats, no altcoins, no distractions.
 
 ### Roadmap
-![Roadmap](roadmap.excalidraw.png)
+![Roadmap](./research/roadmap/roadmap.png)
