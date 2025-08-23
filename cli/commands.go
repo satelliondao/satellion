@@ -25,7 +25,7 @@ var NewCmd = &cobra.Command{
 	Long: `Generate a new wallet with a cryptographically secure random seed phrase.
 The seed phrase will be displayed once - make sure to write it down safely!`,
 	Run: func(cmd *cobra.Command, args []string) {
-		router.GenerateNewWallet()
+		router.CreateWallet()
 	},
 }
 

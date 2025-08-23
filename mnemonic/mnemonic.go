@@ -39,3 +39,7 @@ func NewRandom() *Mnemonic {
 func (m *Mnemonic) String() string {
 	return strings.Join(m.Words, " ")
 }
+
+func (m *Mnemonic) Bytes() []byte {
+	return []byte(m.String())
+}

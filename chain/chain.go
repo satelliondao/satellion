@@ -34,14 +34,13 @@ func NewChain(
 	if err := os.MkdirAll(dataDir, 0o755); err != nil {
 		log.Fatal("failed to create data dir: ", err)
 	}
-	walletDBPath := filepath.Join(dataDir, "neutrino.db")
-	boltDB, err := walletdb.Open(walletDBPath)
+	db, err := walletdb.Connect()
 	if err != nil {
 		log.Fatal("failed to open neutrino db: ", err)
 	}
 	chainService, err := neutrino.NewChainService(neutrino.Config{
 		DataDir:     dataDir,
-		Database:    boltDB,
+		Database:    db,
 		ChainParams: chaincfg.MainNetParams,
 		AddPeers:    cfg.Peers,
 	})
