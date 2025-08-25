@@ -14,7 +14,6 @@ type Wallet struct {
 
 func New(mnemonic *mnemonic.Mnemonic) *Wallet {
 	rootKey, _ := hdkeychain.NewMaster(mnemonic.Bytes(), &chaincfg.MainNetParams)
-	return &Wallet{
-		RootKey: rootKey,
-	}
+	return &Wallet{RootKey: rootKey}
 }
+
