@@ -8,7 +8,6 @@ import (
 	"time"
 
 	prompt "github.com/satelliondao/satellion/cli/promt"
-	"github.com/satelliondao/satellion/ports"
 	"github.com/satelliondao/satellion/stdout"
 )
 
@@ -34,17 +33,7 @@ func (wm *Router) ImportWalletFromSeed() {
 		walletName = "Imported HD Wallet " + time.Now().Format("2006-01-02 15:04:05")
 	}
 
-	walletInfo := ports.WalletInfo{
-		ID:          wallet.MasterAddress, // Use master address as ID
-		Name:        walletName,
-		Address:     wallet.MasterAddress,
-		CreatedAt:   time.Now().Format(time.RFC3339),
-		IsDefault:   false,
-		NextIndex:   wallet.NextIndex,
-		UsedIndexes: wallet.UsedIndexes,
-	}
-
-	err = wm.walletRepo.AddWallet(walletInfo)
+	err = wm.walletRepo.Add(walletName, wallet.Mnemonic)
 	if err != nil {
 		stdout.Error.Printf("Failed to add wallet to list: %v\n", err)
 		return

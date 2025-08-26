@@ -9,6 +9,8 @@ import (
 type Wallet struct {
 	RootKey   *hdkeychain.ExtendedKey
 	nextIndex uint32
+	Name      string
+	IsDefault bool
 }
 
 func New(mnemonic *mnemonic.Mnemonic) *Wallet {

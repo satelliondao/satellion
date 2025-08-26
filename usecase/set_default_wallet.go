@@ -14,18 +14,18 @@ func (wm *Router) SetDefaultWallet() {
 	cyan.Println("⭐ Set Default HD Wallet")
 	cyan.Println("=======================")
 
-	walletList, err := wm.walletRepo.LoadWalletList()
+	walletList, err := wm.walletRepo.GetAll()
 	if err != nil {
 		fmt.Printf("❌ Failed to load wallet list: %v\n", err)
 		return
 	}
-	if len(walletList.Wallets) == 0 {
+	if len(walletList) == 0 {
 		fmt.Println("❌ No wallets available.")
 		return
 	}
 
 	cyan.Println("Available wallets:")
-	for i, wallet := range walletList.Wallets {
+	for i, wallet := range walletList {
 		defaultIndicator := ""
 		if wallet.IsDefault {
 			defaultIndicator = " (Current Default)"
@@ -38,13 +38,13 @@ func (wm *Router) SetDefaultWallet() {
 	choiceStr = strings.TrimSpace(choiceStr)
 	var choice int
 	_, err = fmt.Sscanf(choiceStr, "%d", &choice)
-	if err != nil || choice < 1 || choice > len(walletList.Wallets) {
+	if err != nil || choice < 1 || choice > len(walletList) {
 		cyan.Println("❌ Invalid choice.")
 		return
 	}
-	selectedWallet := walletList.Wallets[choice-1]
+	selectedWallet := walletList[choice-1]
 
-	err = wm.walletRepo.SetDefaultWallet(selectedWallet.ID)
+	err = wm.walletRepo.SetDefault(selectedWallet.Name)
 	if err != nil {
 		cyan.Printf("❌ Failed to set default wallet: %v\n", err)
 		return

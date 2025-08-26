@@ -1,10 +1,20 @@
 package main
 
 import (
-	"github.com/satelliondao/satellion/cli"
+	tea "github.com/charmbracelet/bubbletea"
+	"github.com/satelliondao/satellion/cfg"
+	"github.com/satelliondao/satellion/ui"
+	"github.com/satelliondao/satellion/usecase"
 )
 
 func main() {
-	cli.SetupCommands()
-	cli.Execute()
+	r := usecase.NewRouter()
+	ctx := ui.NewContext(r)
+	pages := map[string]ui.PageFactory{
+		cfg.HomePage:         ui.NewHome,
+		cfg.SyncPage:         ui.NewSync,
+		cfg.CreateWalletPage: ui.NewCreateWallet,
+	}
+	app := ui.NewApp(ctx, pages, cfg.HomePage)
+	_, _ = tea.NewProgram(app).Run()
 }

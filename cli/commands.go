@@ -13,7 +13,7 @@ var router = usecase.NewRouter()
 var RootCmd = &cobra.Command{
 	Use:   "satellion",
 	Short: "Satellion wallet",
-	Long: `Satellion wallet is a open source wallet developed by Satellion DAO`,
+	Long:  `Satellion wallet is a open source wallet developed by Satellion DAO`,
 	Run: func(cmd *cobra.Command, args []string) {
 		cmd.Help()
 	},
@@ -89,7 +89,6 @@ var SyncCmd = &cobra.Command{
 	Short: "Start Neutrino and sync headers",
 	Long:  `Start a Neutrino light client and continuously print the best known block while syncing.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		router.Sync()
 	},
 }
 
@@ -108,4 +107,4 @@ func Execute() {
 		fmt.Println(err)
 		os.Exit(1)
 	}
-} 
+}

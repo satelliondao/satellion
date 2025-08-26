@@ -6,25 +6,20 @@ import (
 
 func (wm *Router) ListWallets() {
 	fmt.Println("📋 HD Wallet List")
-	walletList, err := wm.walletRepo.LoadWalletList()
+	walletList, err := wm.walletRepo.GetAll()
 	if err != nil {
 		fmt.Printf("❌ Failed to load wallet list: %v\n", err)
 		return
 	}
-	if len(walletList.Wallets) == 0 {
+	if len(walletList) == 0 {
 		fmt.Println("No wallets found.")
 		return
 	}
-	for i, wallet := range walletList.Wallets {
+	for i, wallet := range walletList {
 		defaultIndicator := ""
 		if wallet.IsDefault {
 			defaultIndicator = " ⭐"
 		}
-		fmt.Printf(`
-%d. %s%s
-	Master Address: %s
-	Next Index: %d | Used: %d
-	Created: %s
-	`, i+1, wallet.Name, defaultIndicator, wallet.Address, wallet.NextIndex, len(wallet.UsedIndexes), wallet.CreatedAt)
+		fmt.Printf("\n%d. %s%s\n\tNext Index: %d\n", i+1, wallet.Name, defaultIndicator, wallet.NextIndex())
 	}
 }

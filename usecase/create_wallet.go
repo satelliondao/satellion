@@ -6,10 +6,33 @@ import (
 	"os"
 	"strings"
 
+	tea "github.com/charmbracelet/bubbletea"
 	prompt "github.com/satelliondao/satellion/cli/promt"
 	"github.com/satelliondao/satellion/stdout"
 	"github.com/satelliondao/satellion/utils/term"
+	"github.com/satelliondao/satellion/wallet"
 )
+
+type createModel struct {
+	wallet *wallet.Wallet
+}
+
+func (m createModel) Init() tea.Cmd { return nil }
+
+func (m createModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+	switch msg := msg.(type) {
+	case tea.KeyMsg:
+		switch msg.String() {
+		case "q", "esc", "ctrl+c":
+			return m, tea.Quit
+		}
+	}
+	return m, nil
+}
+
+func (m createModel) View() string {
+	return "Create wallet"
+}
 
 func (wm *Router) CreateWallet() {
 	stdout.Info.Println("Generating new master key")

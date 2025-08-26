@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/btcsuite/btcd/chaincfg"
+	bdb "github.com/btcsuite/btcwallet/walletdb"
 	"github.com/fatih/color"
 	"github.com/lightninglabs/neutrino"
 	"github.com/lightninglabs/neutrino/headerfs"
@@ -21,6 +22,7 @@ import (
 type Chain struct {
 	chainService *neutrino.ChainService
 	cfg          *cfg.Config
+	db           bdb.DB
 }
 
 func NewChain(
@@ -34,7 +36,8 @@ func NewChain(
 	if err := os.MkdirAll(dataDir, 0o755); err != nil {
 		log.Fatal("failed to create data dir: ", err)
 	}
-	db, err := walletdb.Connect(dataDir)
+	dbPath := filepath.Join(dataDir, "neutrino.db")
+	db, err := walletdb.Connect(dbPath)
 	if err != nil {
 		log.Fatal("failed to open neutrino db: ", err)
 	}
@@ -50,11 +53,20 @@ func NewChain(
 	return &Chain{
 		chainService: chainService,
 		cfg:          cfg,
+		db:           db,
 	}
 }
 
 func (c *Chain) BestBlock() (*headerfs.BlockStamp, error) {
 	return c.chainService.BestBlock()
+}
+
+func (c *Chain) Start() error {
+	return c.chainService.Start()
+}
+
+func (c *Chain) ConnectedCount() int32 {
+	return c.chainService.ConnectedCount()
 }
 
 func (c *Chain) Sync() error {
@@ -101,5 +113,9 @@ func (c *Chain) Sync() error {
 }
 
 func (c *Chain) Stop() error {
-	return c.chainService.Stop()
+	_ = c.chainService.Stop()
+	if c.db != nil {
+		return c.db.Close()
+	}
+	return nil
 }

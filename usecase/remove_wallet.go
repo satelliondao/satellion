@@ -12,17 +12,17 @@ import (
 func (wm *Router) RemoveWallet() {
 	red := color.New(color.FgRed)
 	red.Println("🗑️ Remove HD Wallet")
-	walletList, err := wm.walletRepo.LoadWalletList()
+	walletList, err := wm.walletRepo.GetAll()
 	if err != nil {
 		fmt.Printf("❌ Failed to load wallet list: %v\n", err)
 		return
 	}
-	if len(walletList.Wallets) == 0 {
+	if len(walletList) == 0 {
 		fmt.Println("❌ No wallets to remove.")
 		return
 	}
 	red.Println("Available wallets:")
-	for i, wallet := range walletList.Wallets {
+	for i, wallet := range walletList {
 		defaultIndicator := ""
 		if wallet.IsDefault {
 			defaultIndicator = " (Default)"
@@ -36,11 +36,11 @@ func (wm *Router) RemoveWallet() {
 	choiceStr = strings.TrimSpace(choiceStr)
 	var choice int
 	_, err = fmt.Sscanf(choiceStr, "%d", &choice)
-	if err != nil || choice < 1 || choice > len(walletList.Wallets) {
+	if err != nil || choice < 1 || choice > len(walletList) {
 		red.Println("❌ Invalid choice.")
 		return
 	}
-	selectedWallet := walletList.Wallets[choice-1]
+	selectedWallet := walletList[choice-1]
 	red.Printf("Are you sure you want to remove HD wallet '%s'? (y/N): ", selectedWallet.Name)
 	confirm, _ := reader.ReadString('\n')
 	confirm = strings.ToLower(strings.TrimSpace(confirm))
@@ -48,7 +48,7 @@ func (wm *Router) RemoveWallet() {
 		red.Println("❌ Operation cancelled.")
 		return
 	}
-	err = wm.walletRepo.DeleteWallet(selectedWallet.ID)
+	err = wm.walletRepo.Delete(selectedWallet.Name)
 	if err != nil {
 		red.Printf("❌ Failed to remove wallet: %v\n", err)
 		return
