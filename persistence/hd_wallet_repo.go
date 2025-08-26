@@ -10,7 +10,6 @@ import (
 	"github.com/satelliondao/satellion/ports"
 )
 
-
 type HDWalletRepo struct {
 	enclave *enclave.Enclave
 }
@@ -20,7 +19,6 @@ func NewHDWalletRepo() *HDWalletRepo {
 		enclave: enclave.NewEnclave("hd-wallet-keys"),
 	}
 }
-
 
 func (wm *HDWalletRepo) LoadHDWallet(walletID string) (*ports.HDWallet, error) {
 	hdWalletData, err := wm.enclave.Load(walletID)
@@ -94,7 +92,6 @@ func (wm *HDWalletRepo) AddWallet(walletInfo ports.WalletInfo) error {
 	return wm.SaveWalletList(walletList)
 }
 
-
 func (wm *HDWalletRepo) SetDefaultWallet(walletID string) error {
 	walletList, err := wm.LoadWalletList()
 	if err != nil {
@@ -132,7 +129,7 @@ func (wm *HDWalletRepo) GetNextAddress(walletID string) (string, error) {
 	}
 
 	nextAddress := deriveAddress(hdWallet.MasterPrivateKey, hdWallet.NextIndex)
-	
+
 	return nextAddress, nil
 }
 
@@ -155,7 +152,7 @@ func (wm *HDWalletRepo) MarkAddressAsUsed(walletID string, addressIndex uint32) 
 			break
 		}
 	}
-	
+
 	if !found {
 		hdWallet.UsedIndexes = append(hdWallet.UsedIndexes, addressIndex)
 	}
@@ -212,4 +209,4 @@ func deriveAddress(masterPrivateKey string, index uint32) string {
 	derivationData := fmt.Sprintf("%s_%d", masterPrivateKey, index)
 	hash := sha256.Sum256([]byte(derivationData))
 	return "0x" + hex.EncodeToString(hash[:20])
-} 
+}

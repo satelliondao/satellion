@@ -3,12 +3,12 @@ package ports
 import "github.com/satelliondao/satellion/mnemonic"
 
 type WalletInfo struct {
-	ID        string `json:"id"`
-	Name      string `json:"name"`
-	Address   string `json:"address"`
-	CreatedAt string `json:"created_at"`
-	IsDefault bool   `json:"is_default"`
-	NextIndex uint32 `json:"next_index"` // Next unused address index
+	ID          string   `json:"id"`
+	Name        string   `json:"name"`
+	Address     string   `json:"address"`
+	CreatedAt   string   `json:"created_at"`
+	IsDefault   bool     `json:"is_default"`
+	NextIndex   uint32   `json:"next_index"`   // Next unused address index
 	UsedIndexes []uint32 `json:"used_indexes"` // Indexes of addresses that have been used
 }
 
@@ -18,13 +18,11 @@ type WalletList struct {
 }
 
 type HDWallet struct {
-	Name             string   `json:"name"`
-	MasterPrivateKey string   `json:"master_private_key"`
-	MasterPublicKey  string   `json:"master_public_key"`
-	MasterAddress    string   `json:"master_address"`
-	Mnemonic         *mnemonic.Mnemonic   `json:"mnemonic"`
-	NextIndex        uint32   `json:"next_index"`
-	UsedIndexes      []uint32 `json:"used_indexes"`
+	Name             string             `json:"name"`
+	MasterPrivateKey string             `json:"master_private_key"`
+	MasterPublicKey  string             `json:"master_public_key"`
+	MasterAddress    string             `json:"master_address"`
+	Mnemonic         *mnemonic.Mnemonic `json:"mnemonic"`
+	NextIndex        uint32             `json:"next_index"`
+	UsedIndexes      []uint32           `json:"used_indexes"`
 }
-
-

@@ -20,7 +20,7 @@ import (
 
 type Chain struct {
 	chainService *neutrino.ChainService
-	cfg *cfg.Config
+	cfg          *cfg.Config
 }
 
 func NewChain(
@@ -34,7 +34,7 @@ func NewChain(
 	if err := os.MkdirAll(dataDir, 0o755); err != nil {
 		log.Fatal("failed to create data dir: ", err)
 	}
-	db, err := walletdb.Connect()
+	db, err := walletdb.Connect(dataDir)
 	if err != nil {
 		log.Fatal("failed to open neutrino db: ", err)
 	}
@@ -49,7 +49,7 @@ func NewChain(
 	}
 	return &Chain{
 		chainService: chainService,
-		cfg: cfg,
+		cfg:          cfg,
 	}
 }
 
@@ -103,4 +103,3 @@ func (c *Chain) Sync() error {
 func (c *Chain) Stop() error {
 	return c.chainService.Stop()
 }
-

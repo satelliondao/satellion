@@ -4,7 +4,6 @@ import (
 	"fmt"
 )
 
-// ListWallets displays all wallets
 func (wm *Router) ListWallets() {
 	fmt.Println("📋 HD Wallet List")
 	walletList, err := wm.walletRepo.LoadWalletList()
@@ -21,11 +20,6 @@ func (wm *Router) ListWallets() {
 		if wallet.IsDefault {
 			defaultIndicator = " ⭐"
 		}
-		// fmt.Printf("%d. %s%s\n", i+1, wallet.Name, defaultIndicator)
-		// fmt.Printf("   Master Address: %s\n", wallet.Address)
-		// fmt.Printf("   Next Index: %d | Used: %d\n", wallet.NextIndex, len(wallet.UsedIndexes))
-		// fmt.Printf("   Created: %s\n", wallet.CreatedAt)
-		// fmt.Println()
 		fmt.Printf(`
 %d. %s%s
 	Master Address: %s

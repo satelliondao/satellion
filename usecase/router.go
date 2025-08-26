@@ -32,7 +32,7 @@ func genNewWallet() *ports.HDWallet {
 		MasterPrivateKey: masterPrivateKey,
 		MasterPublicKey:  "0x" + hex.EncodeToString([]byte("master_public_key")),
 		MasterAddress:    masterAddress,
-		Mnemonic:       mnemonic,
+		Mnemonic:         mnemonic,
 		NextIndex:        0,
 		UsedIndexes:      []uint32{},
 	}
@@ -51,9 +51,8 @@ func createHDWalletFromSeed(mnemonic *mnemonic.Mnemonic) (*ports.HDWallet, error
 		MasterPrivateKey: masterPrivateKey,
 		MasterPublicKey:  "0x" + hex.EncodeToString([]byte("master_public_key")),
 		MasterAddress:    masterAddress,
-		Mnemonic:       mnemonic,
+		Mnemonic:         mnemonic,
 		NextIndex:        0,
 		UsedIndexes:      []uint32{},
 	}, nil
 }
-

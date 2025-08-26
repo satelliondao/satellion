@@ -9,7 +9,6 @@ import (
 	"github.com/fatih/color"
 )
 
-// RemoveWallet removes a wallet
 func (wm *Router) RemoveWallet() {
 	red := color.New(color.FgRed)
 	red.Println("🗑️ Remove HD Wallet")

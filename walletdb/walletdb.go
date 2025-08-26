@@ -11,7 +11,7 @@ import (
 
 var (
 	defaultDBTimeout = 10 * time.Second
-	walletStoreKey       = []byte("wallets")
+	walletStoreKey   = []byte("wallets")
 )
 
 type DB struct {

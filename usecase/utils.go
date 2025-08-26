@@ -9,7 +9,7 @@ import (
 )
 
 func DisplayWalletInfo(hdWallet *ports.HDWallet) {
-stdout.Trace.Printf(`
+	stdout.Trace.Printf(`
 Next Address Index: %d
 Used Addresses: %d
 ⚠️  Keep your seed phrase safe and private!
