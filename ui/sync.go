@@ -6,7 +6,7 @@ import (
 
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/fatih/color"
-	"github.com/satelliondao/satellion/cfg"
+	"github.com/satelliondao/satellion/config"
 	"github.com/satelliondao/satellion/stdout"
 )
 
@@ -44,7 +44,7 @@ func (s *syncModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch v := msg.(type) {
 	case tea.KeyMsg:
 		if stdout.ShouldQuit(v) {
-			return s, Navigate(cfg.HomePage)
+			return s, Navigate(config.HomePage)
 		}
 	case tickMsg:
 		stamp, peers, err := s.ctx.Router.BestBlock()

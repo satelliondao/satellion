@@ -1,4 +1,4 @@
-package cfg
+package config
 
 var (
 	HomePage           = "home"

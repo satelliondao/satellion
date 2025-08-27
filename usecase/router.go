@@ -10,8 +10,8 @@ import (
 	"time"
 
 	"github.com/lightninglabs/neutrino/headerfs"
-	"github.com/satelliondao/satellion/cfg"
 	"github.com/satelliondao/satellion/chain"
+	"github.com/satelliondao/satellion/config"
 	"github.com/satelliondao/satellion/mnemonic"
 	"github.com/satelliondao/satellion/ports"
 	"github.com/satelliondao/satellion/walletdb"
@@ -20,7 +20,7 @@ import (
 type Router struct {
 	WalletRepo ports.WalletRepository
 	Chain      *chain.Chain
-	Config     *cfg.Config
+	Config     *config.Config
 }
 
 func NewRouter() *Router {
@@ -38,7 +38,7 @@ func NewRouter() *Router {
 		fmt.Println("failed to open wallets db:", err)
 		os.Exit(1)
 	}
-	loaded, _ := cfg.Load()
+	loaded, _ := config.Load()
 	repo := walletdb.NewWalletRepository(db)
 	return &Router{WalletRepo: repo, Config: loaded}
 }
@@ -82,7 +82,7 @@ func (r *Router) StartChain() error {
 		return nil
 	}
 	if r.Config == nil {
-		loaded, err := cfg.Load()
+		loaded, err := config.Load()
 		if err != nil {
 			return err
 		}

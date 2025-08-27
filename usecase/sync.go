@@ -7,8 +7,8 @@ import (
 
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/fatih/color"
-	"github.com/satelliondao/satellion/cfg"
 	"github.com/satelliondao/satellion/chain"
+	"github.com/satelliondao/satellion/config"
 )
 
 type head struct {
@@ -73,7 +73,7 @@ func (m syncModel) View() string {
 }
 
 func (wm *Router) Sync() {
-	loaded, err := cfg.Load()
+	loaded, err := config.Load()
 	if err != nil {
 		fmt.Println("failed to load config:", err)
 		os.Exit(1)

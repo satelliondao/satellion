@@ -6,7 +6,7 @@ import (
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/fatih/color"
-	"github.com/satelliondao/satellion/cfg"
+	"github.com/satelliondao/satellion/config"
 	"github.com/satelliondao/satellion/mnemonic"
 )
 
@@ -51,7 +51,7 @@ func (m createWalletModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					m.ctx.TempWalletName = m.nameInput.Value()
 					m.ctx.TempMnemonic = m.mnemonic
 				}
-				return m, Navigate(cfg.VerifyMnemonicPage)
+				return m, Navigate(config.VerifyMnemonicPage)
 			}
 		}
 

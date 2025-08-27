@@ -9,7 +9,7 @@ import (
 
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/satelliondao/satellion/cfg"
+	"github.com/satelliondao/satellion/config"
 	"github.com/satelliondao/satellion/mnemonic"
 )
 
@@ -83,7 +83,7 @@ func (m verifyMnemonicModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 			m.ctx.TempWalletName = ""
 			m.ctx.TempMnemonic = nil
-			return m, Navigate(cfg.HomePage)
+			return m, Navigate(config.HomePage)
 		}
 	}
 	if len(m.inputs) > 0 {

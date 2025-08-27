@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/satelliondao/satellion/cfg"
+	"github.com/satelliondao/satellion/config"
 	"github.com/satelliondao/satellion/stdout"
 	"github.com/satelliondao/satellion/wallet"
 )
@@ -34,13 +34,13 @@ func (m *listWalletsModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, tea.Quit
 		}
 		if v.String() == "enter" {
-			return m, Navigate(cfg.HomePage)
+			return m, Navigate(config.HomePage)
 		}
 		if v.String() == "up" {
-			return m, Navigate(cfg.HomePage)
+			return m, Navigate(config.HomePage)
 		}
 		if v.String() == "down" {
-			return m, Navigate(cfg.HomePage)
+			return m, Navigate(config.HomePage)
 		}
 	}
 	return m, nil
