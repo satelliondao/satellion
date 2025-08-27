@@ -18,9 +18,9 @@ import (
 )
 
 type Router struct {
-	walletRepo ports.WalletRepository
-	chain      *chain.Chain
-	cfgLoaded  *cfg.Config
+	WalletRepo ports.WalletRepository
+	Chain      *chain.Chain
+	Config     *cfg.Config
 }
 
 func NewRouter() *Router {
@@ -39,7 +39,8 @@ func NewRouter() *Router {
 		os.Exit(1)
 	}
 	loaded, _ := cfg.Load()
-	return &Router{walletRepo: walletdb.NewWalletRepository(db), cfgLoaded: loaded}
+	repo := walletdb.NewWalletRepository(db)
+	return &Router{WalletRepo: repo, Config: loaded}
 }
 
 func genNewWallet() *ports.HDWallet {
@@ -77,45 +78,45 @@ func createHDWalletFromSeed(mnemonic *mnemonic.Mnemonic) (*ports.HDWallet, error
 
 // UI Router integration helpers
 func (r *Router) StartChain() error {
-	if r.chain != nil {
+	if r.Chain != nil {
 		return nil
 	}
-	if r.cfgLoaded == nil {
+	if r.Config == nil {
 		loaded, err := cfg.Load()
 		if err != nil {
 			return err
 		}
-		r.cfgLoaded = loaded
+		r.Config = loaded
 	}
-	r.chain = chain.NewChain(r.cfgLoaded)
-	return r.chain.Start()
+	r.Chain = chain.NewChain(r.Config)
+	return r.Chain.Start()
 }
 
 func (r *Router) StopChain() error {
-	if r.chain == nil {
+	if r.Chain == nil {
 		return nil
 	}
-	err := r.chain.Stop()
-	r.chain = nil
+	err := r.Chain.Stop()
+	r.Chain = nil
 	return err
 }
 
 func (r *Router) BestBlock() (*headerfs.BlockStamp, int, error) {
-	if r.chain == nil {
+	if r.Chain == nil {
 		return nil, 0, fmt.Errorf("chain not started")
 	}
-	stamp, err := r.chain.BestBlock()
+	stamp, err := r.Chain.BestBlock()
 	if err != nil {
 		return nil, 0, err
 	}
-	return stamp, int(r.chain.ConnectedCount()), nil
+	return stamp, int(r.Chain.ConnectedCount()), nil
 }
 
 func (r *Router) MinPeers() int {
-	if r.cfgLoaded == nil || r.cfgLoaded.MinPeers == 0 {
+	if r.Config == nil || r.Config.MinPeers == 0 {
 		return 5
 	}
-	return r.cfgLoaded.MinPeers
+	return r.Config.MinPeers
 }
 
 // AddWallet saves the mnemonic under the provided wallet name.
@@ -123,5 +124,5 @@ func (r *Router) AddWallet(name string, m *mnemonic.Mnemonic) error {
 	if name == "" || m == nil {
 		return fmt.Errorf("invalid wallet data")
 	}
-	return r.walletRepo.Add(name, m)
+	return r.WalletRepo.Add(name, m)
 }

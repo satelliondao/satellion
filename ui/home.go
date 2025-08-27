@@ -16,11 +16,13 @@ type homeModel struct {
 var (
 	MenuSyncBlockchain  = "Sync blockchain"
 	MenuCreateNewWallet = "Create new wallet"
+	MenuListWallets     = "List wallets"
 )
 
 var choices = []string{
 	MenuSyncBlockchain,
 	MenuCreateNewWallet,
+	MenuListWallets,
 }
 
 func NewHome(ctx *AppContext) Page {
@@ -52,6 +54,8 @@ func (m *homeModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			switch m.choices[m.cursor] {
 			case MenuCreateNewWallet:
 				return m, Navigate("create")
+			case MenuListWallets:
+				return m, Navigate("list")
 			// 	return m, nil
 			// case "Import wallet from seed":
 			// 	m.ctx.Router.ImportWalletFromSeed()
@@ -62,8 +66,6 @@ func (m *homeModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			// case "List wallets":
 			// 	m.ctx.Router.ListWallets()
 			// return m, nil
-			case MenuCreateNewWallet:
-				return m, nil
 			case MenuSyncBlockchain:
 				return m, Navigate("sync")
 			}

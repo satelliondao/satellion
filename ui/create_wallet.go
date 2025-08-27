@@ -10,31 +10,31 @@ import (
 	"github.com/satelliondao/satellion/mnemonic"
 )
 
-type model struct {
+type createWalletModel struct {
 	ctx                *AppContext
 	nameInput          textinput.Model
 	nameInputCompleted bool
 	mnemonic           *mnemonic.Mnemonic
 }
 
-func initialModel(ctx *AppContext) model {
+func initialModel(ctx *AppContext) createWalletModel {
 	i := textinput.New()
 	i.Placeholder = "Enter wallet name"
 	i.Focus()
 	i.CharLimit = 50
 	i.Width = 20
-	return model{ctx: ctx, nameInput: i}
+	return createWalletModel{ctx: ctx, nameInput: i}
 }
 
 func NewCreateWallet(ctx *AppContext) Page {
 	return initialModel(ctx)
 }
 
-func (m model) Init() tea.Cmd {
+func (m createWalletModel) Init() tea.Cmd {
 	return textinput.Blink
 }
 
-func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+func (m createWalletModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var cmd tea.Cmd
 
 	switch msg := msg.(type) {
@@ -64,10 +64,11 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return m, cmd
 }
 
-func (m model) View() string {
+func (m createWalletModel) View() string {
 	if m.mnemonic == nil {
 		return fmt.Sprintf("Get name for your wallet\n\n%s", m.nameInput.View())
 	}
+
 	if m.mnemonic != nil {
 		return fmt.Sprintf(
 			"Wallet name: %s\n\n%s\n\n%s\n%s\n%s\n",

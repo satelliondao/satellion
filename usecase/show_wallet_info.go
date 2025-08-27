@@ -9,7 +9,7 @@ func (wm *Router) ShowWalletInfo() {
 👁️  HD Wallet Information
 =========================
 `)
-	walletList, err := wm.walletRepo.GetAll()
+	walletList, err := wm.WalletRepo.GetAll()
 	if err != nil {
 		fmt.Printf("❌ Failed to load wallet list: %v\n", err)
 		return

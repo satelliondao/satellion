@@ -38,7 +38,6 @@ func (s *WalletRepository) Save(wname string, m *mnemonic.Mnemonic) error {
 		if marshalErr != nil {
 			return marshalErr
 		}
-
 		return bucket.Put(s.bucketName(wname), out)
 	}, func() {})
 }
@@ -51,15 +50,17 @@ func (s *WalletRepository) Get(wname string) (*mnemonic.Mnemonic, error) {
 		if bucket == nil {
 			return nil
 		}
-
 		raw := bucket.Get(bucketName)
 		if len(raw) == 0 {
+			legacy := bucket.Get([]byte(wname))
+			if len(legacy) == 0 {
+				return nil
+			}
+			entity.Mnemonic = string(legacy)
 			return nil
 		}
-
 		return json.Unmarshal(raw, &entity)
 	}, func() {})
-
 	if err != nil {
 		return nil, err
 	}
@@ -70,67 +71,22 @@ func (s *WalletRepository) Get(wname string) (*mnemonic.Mnemonic, error) {
 }
 
 func (s *WalletRepository) Add(wname string, m *mnemonic.Mnemonic) error {
-	return s.db.Update(func(tx bdb.ReadWriteTx) error {
-		if err := s.Save(wname, m); err != nil {
-			return err
-		}
-		idx := tx.ReadWriteBucket(walletStoreKey)
-		if idx == nil {
-			b, err := tx.CreateTopLevelBucket(walletStoreKey)
-			if err != nil {
-				return err
-			}
-			idx = b
-		}
-		return idx.Put([]byte(wname), []byte("1"))
-	}, func() {})
+	return s.Save(wname, m)
 }
 
 func (s *WalletRepository) GetAll() ([]wallet.Wallet, error) {
 	var list []wallet.Wallet
 	err := s.db.View(func(tx bdb.ReadTx) error {
-		idx := tx.ReadBucket(walletStoreKey)
-		if idx == nil {
-			list = []wallet.Wallet{}
-			return nil
-		}
-		// determine default name
-		var def string
-		if v := idx.Get([]byte("__default__")); len(v) > 0 {
-			def = string(v)
-		}
-		_ = idx.ForEach(func(k, v []byte) error {
+		return tx.ForEachBucket(func(k []byte) error {
 			name := string(k)
-			if name == "__default__" {
-				return nil
+			if strings.HasPrefix(name, "wallet_") {
+				list = append(list, wallet.Wallet{Name: strings.TrimPrefix(name, "wallet_")})
 			}
-			// read entity to ensure it exists
-			b := tx.ReadBucket(s.bucketName(name))
-			if b == nil {
-				return nil
-			}
-			raw := b.Get(s.bucketName(name))
-			if len(raw) == 0 {
-				return nil
-			}
-			var ent WalletEntity
-			if err := json.Unmarshal(raw, &ent); err != nil {
-				return nil
-			}
-			w := wallet.Wallet{Name: ent.Name}
-			if ent.Name == def {
-				w.IsDefault = true
-			}
-			list = append(list, w)
 			return nil
 		})
-		return nil
 	}, func() {})
 	if err != nil {
 		return nil, err
-	}
-	if list == nil {
-		list = []wallet.Wallet{}
 	}
 	return list, nil
 }

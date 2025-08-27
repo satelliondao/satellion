@@ -12,7 +12,7 @@ import (
 func (wm *Router) RemoveWallet() {
 	red := color.New(color.FgRed)
 	red.Println("🗑️ Remove HD Wallet")
-	walletList, err := wm.walletRepo.GetAll()
+	walletList, err := wm.WalletRepo.GetAll()
 	if err != nil {
 		fmt.Printf("❌ Failed to load wallet list: %v\n", err)
 		return
@@ -48,7 +48,7 @@ func (wm *Router) RemoveWallet() {
 		red.Println("❌ Operation cancelled.")
 		return
 	}
-	err = wm.walletRepo.Delete(selectedWallet.Name)
+	err = wm.WalletRepo.Delete(selectedWallet.Name)
 	if err != nil {
 		red.Printf("❌ Failed to remove wallet: %v\n", err)
 		return

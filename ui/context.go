@@ -11,4 +11,6 @@ type AppContext struct {
 	TempMnemonic   *mnemonic.Mnemonic
 }
 
-func NewContext(router *usecase.Router) *AppContext { return &AppContext{Router: router} }
+func NewContext(router *usecase.Router) *AppContext {
+	return &AppContext{Router: router}
+}

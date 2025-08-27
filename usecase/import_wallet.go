@@ -33,7 +33,7 @@ func (wm *Router) ImportWalletFromSeed() {
 		walletName = "Imported HD Wallet " + time.Now().Format("2006-01-02 15:04:05")
 	}
 
-	err = wm.walletRepo.Add(walletName, wallet.Mnemonic)
+	err = wm.WalletRepo.Add(walletName, wallet.Mnemonic)
 	if err != nil {
 		stdout.Error.Printf("Failed to add wallet to list: %v\n", err)
 		return

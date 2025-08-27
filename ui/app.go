@@ -12,7 +12,9 @@ type PageFactory func(ctx *AppContext) Page
 
 type NavigateMsg struct{ To string }
 
-func Navigate(to string) tea.Cmd { return func() tea.Msg { return NavigateMsg{To: to} } }
+func Navigate(to string) tea.Cmd {
+	return func() tea.Msg { return NavigateMsg{To: to} }
+}
 
 type App struct {
 	ctx     *AppContext

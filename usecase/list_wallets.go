@@ -6,7 +6,7 @@ import (
 
 func (wm *Router) ListWallets() {
 	fmt.Println("📋 HD Wallet List")
-	walletList, err := wm.walletRepo.GetAll()
+	walletList, err := wm.WalletRepo.GetAll()
 	if err != nil {
 		fmt.Printf("❌ Failed to load wallet list: %v\n", err)
 		return
