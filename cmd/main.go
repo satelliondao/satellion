@@ -3,8 +3,8 @@ package main
 import (
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/satelliondao/satellion/config"
+	usecase "github.com/satelliondao/satellion/router"
 	"github.com/satelliondao/satellion/ui"
-	"github.com/satelliondao/satellion/usecase"
 )
 
 func main() {

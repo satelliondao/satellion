@@ -15,7 +15,6 @@ import (
 	"github.com/lightninglabs/neutrino"
 	"github.com/lightninglabs/neutrino/headerfs"
 	"github.com/satelliondao/satellion/config"
-	"github.com/satelliondao/satellion/utils/term"
 	"github.com/satelliondao/satellion/walletdb"
 )
 
@@ -83,10 +82,8 @@ func (c *Chain) Sync() error {
 		case <-ticker.C:
 			stamp, err := c.chainService.BestBlock()
 			if err != nil {
-				term.PrintfInline("best block error: %v\n", err)
 				continue
 			}
-			term.PrintfInline("best height=%d time=%s peers=%d", stamp.Height, stamp.Timestamp.UTC().Format(time.RFC3339), c.chainService.ConnectedCount())
 
 			if int(c.chainService.ConnectedCount()) >= c.config.MinPeers {
 				isCurrent := false
@@ -105,7 +102,6 @@ func (c *Chain) Sync() error {
 				}
 			}
 		case <-sigCh:
-			term.Newline()
 			fmt.Println("shutting down...")
 			return nil
 		}

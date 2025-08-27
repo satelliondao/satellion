@@ -2,7 +2,7 @@ package ui
 
 import (
 	"github.com/satelliondao/satellion/mnemonic"
-	"github.com/satelliondao/satellion/usecase"
+	usecase "github.com/satelliondao/satellion/router"
 )
 
 type AppContext struct {
