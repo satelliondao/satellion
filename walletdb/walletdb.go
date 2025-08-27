@@ -1,7 +1,6 @@
 package walletdb
 
 import (
-	"log"
 	"os"
 	"path/filepath"
 	"time"
@@ -12,36 +11,36 @@ import (
 
 var (
 	defaultDBTimeout = 10 * time.Second
-	walletStoreKey       = []byte("wallets")
+	walletStoreKey   = []byte("wallets")
 )
 
 type DB struct {
 	db walletdb.DB
 }
 
-func Connect() (walletdb.DB, error) {
+func Connect(dataDir string) (walletdb.DB, error) {
+	if dataDir != "" {
+		if err := os.MkdirAll(filepath.Dir(dataDir), 0o755); err != nil {
+			return nil, err
+		}
+		return openOrCreate(dataDir)
+	}
 	home, err := os.UserHomeDir()
 	if err != nil {
 		home = "."
 	}
-	dataDir := filepath.Join(home, ".satellion", "neutrino", "mainnet")
+	dataDir = filepath.Join(home, ".satellion", "neutrino", "mainnet")
 	if err := os.MkdirAll(dataDir, 0o755); err != nil {
-		log.Fatal("failed to create data dir: ", err)
+		return nil, err
 	}
 	path := filepath.Join(dataDir, "neutrino.db")
-	db, err := openOrCreate(path)
-	if err != nil {
-		log.Fatal("failed to open neutrino db: ", err)
-	}
-
-	return db, nil
+	return openOrCreate(path)
 }
-
 
 func openOrCreate(path string) (walletdb.DB, error) {
 	_, statErr := os.Stat(path)
 	if os.IsNotExist(statErr) {
-		return walletdb.Create("bdb", path, true, 60*time.Second, false)
+		return walletdb.Create("bdb", path, true, defaultDBTimeout, false)
 	}
-	return walletdb.Open("bdb", path, true, 60*time.Second, false)
+	return walletdb.Open("bdb", path, true, defaultDBTimeout, false)
 }

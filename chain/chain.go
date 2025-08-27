@@ -10,21 +10,22 @@ import (
 	"time"
 
 	"github.com/btcsuite/btcd/chaincfg"
+	bdb "github.com/btcsuite/btcwallet/walletdb"
 	"github.com/fatih/color"
 	"github.com/lightninglabs/neutrino"
 	"github.com/lightninglabs/neutrino/headerfs"
-	"github.com/satelliondao/satellion/cfg"
-	"github.com/satelliondao/satellion/utils/term"
+	"github.com/satelliondao/satellion/config"
 	"github.com/satelliondao/satellion/walletdb"
 )
 
 type Chain struct {
 	chainService *neutrino.ChainService
-	cfg *cfg.Config
+	config       *config.Config
+	db           bdb.DB
 }
 
 func NewChain(
-	cfg *cfg.Config,
+	config *config.Config,
 ) *Chain {
 	home, err := os.UserHomeDir()
 	if err != nil {
@@ -34,7 +35,8 @@ func NewChain(
 	if err := os.MkdirAll(dataDir, 0o755); err != nil {
 		log.Fatal("failed to create data dir: ", err)
 	}
-	db, err := walletdb.Connect()
+	dbPath := filepath.Join(dataDir, "neutrino.db")
+	db, err := walletdb.Connect(dbPath)
 	if err != nil {
 		log.Fatal("failed to open neutrino db: ", err)
 	}
@@ -42,19 +44,28 @@ func NewChain(
 		DataDir:     dataDir,
 		Database:    db,
 		ChainParams: chaincfg.MainNetParams,
-		AddPeers:    cfg.Peers,
+		AddPeers:    config.Peers,
 	})
 	if err != nil {
 		log.Fatal(`failed to create chain service: `, err)
 	}
 	return &Chain{
 		chainService: chainService,
-		cfg: cfg,
+		config:       config,
+		db:           db,
 	}
 }
 
 func (c *Chain) BestBlock() (*headerfs.BlockStamp, error) {
 	return c.chainService.BestBlock()
+}
+
+func (c *Chain) Start() error {
+	return c.chainService.Start()
+}
+
+func (c *Chain) ConnectedCount() int32 {
+	return c.chainService.ConnectedCount()
 }
 
 func (c *Chain) Sync() error {
@@ -71,12 +82,10 @@ func (c *Chain) Sync() error {
 		case <-ticker.C:
 			stamp, err := c.chainService.BestBlock()
 			if err != nil {
-				term.PrintfInline("best block error: %v\n", err)
 				continue
 			}
-			term.PrintfInline("best height=%d time=%s peers=%d", stamp.Height, stamp.Timestamp.UTC().Format(time.RFC3339), c.chainService.ConnectedCount())
 
-			if int(c.chainService.ConnectedCount()) >= c.cfg.MinPeers {
+			if int(c.chainService.ConnectedCount()) >= c.config.MinPeers {
 				isCurrent := false
 				type isCurrentCap interface{ IsCurrent() bool }
 				if v, ok := interface{}(c.chainService).(isCurrentCap); ok {
@@ -93,7 +102,6 @@ func (c *Chain) Sync() error {
 				}
 			}
 		case <-sigCh:
-			term.Newline()
 			fmt.Println("shutting down...")
 			return nil
 		}
@@ -101,6 +109,9 @@ func (c *Chain) Sync() error {
 }
 
 func (c *Chain) Stop() error {
-	return c.chainService.Stop()
+	_ = c.chainService.Stop()
+	if c.db != nil {
+		return c.db.Close()
+	}
+	return nil
 }
-
