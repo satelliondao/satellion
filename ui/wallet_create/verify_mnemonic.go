@@ -1,4 +1,4 @@
-package ui
+package wallet_create
 
 import (
 	"fmt"
@@ -11,12 +11,13 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/satelliondao/satellion/config"
 	"github.com/satelliondao/satellion/mnemonic"
+	"github.com/satelliondao/satellion/ui/frame"
 )
 
 const wordCount = 3
 
-type verifyMnemonicModel struct {
-	ctx      *AppContext
+type verifyState struct {
+	ctx      *frame.AppContext
 	mnemonic *mnemonic.Mnemonic
 	inputs   []textinput.Model
 	focus    int
@@ -24,8 +25,8 @@ type verifyMnemonicModel struct {
 	err      string
 }
 
-func NewVerifyMnemonic(ctx *AppContext) Page {
-	m := verifyMnemonicModel{ctx: ctx}
+func NewVerify(ctx *frame.AppContext) frame.Page {
+	m := verifyState{ctx: ctx}
 	if ctx != nil {
 		m.mnemonic = ctx.TempMnemonic
 	}
@@ -48,11 +49,11 @@ func NewVerifyMnemonic(ctx *AppContext) Page {
 	return m
 }
 
-func (m verifyMnemonicModel) Init() tea.Cmd {
+func (m verifyState) Init() tea.Cmd {
 	return textinput.Blink
 }
 
-func (m verifyMnemonicModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+func (m verifyState) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var cmd tea.Cmd
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
@@ -83,7 +84,7 @@ func (m verifyMnemonicModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 			m.ctx.TempWalletName = ""
 			m.ctx.TempMnemonic = nil
-			return m, Navigate(config.HomePage)
+			return m, frame.Navigate(config.HomePage)
 		}
 	}
 	if len(m.inputs) > 0 {
@@ -95,7 +96,7 @@ func (m verifyMnemonicModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return m, cmd
 }
 
-func (m verifyMnemonicModel) isMnemonicValid() bool {
+func (m verifyState) isMnemonicValid() bool {
 	valid := true
 	for i := 0; i < wordCount; i++ {
 		want := strings.ToLower(m.mnemonic.Words[m.indices[i]])
@@ -108,7 +109,7 @@ func (m verifyMnemonicModel) isMnemonicValid() bool {
 	return valid
 }
 
-func (m verifyMnemonicModel) View() string {
+func (m verifyState) View() string {
 	if m.mnemonic == nil {
 		return "Verify your mnemonic\n\nMnemonic not found. Press Esc to go back."
 	}

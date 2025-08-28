@@ -1,4 +1,4 @@
-package ui
+package wallet_switch
 
 import (
 	"fmt"
@@ -6,20 +6,21 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/satelliondao/satellion/config"
 	"github.com/satelliondao/satellion/stdout"
+	"github.com/satelliondao/satellion/ui/frame"
 	"github.com/satelliondao/satellion/wallet"
 )
 
-type switchWalletModel struct {
-	ctx     *AppContext
+type state struct {
+	ctx     *frame.AppContext
 	wallets []wallet.Wallet
 	active  string
 	cursor  int
 	err     string
 }
 
-func NewSwitchWallet(ctx *AppContext) Page { return &switchWalletModel{ctx: ctx} }
+func New(ctx *frame.AppContext) frame.Page { return &state{ctx: ctx} }
 
-func (m *switchWalletModel) Init() tea.Cmd {
+func (m *state) Init() tea.Cmd {
 	wallets, err := m.ctx.WalletRepo.GetAll()
 	if err != nil {
 		m.err = err.Error()
@@ -33,7 +34,7 @@ func (m *switchWalletModel) Init() tea.Cmd {
 	return nil
 }
 
-func (m *switchWalletModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+func (m *state) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch v := msg.(type) {
 	case tea.KeyMsg:
 		if stdout.ShouldQuit(v) {
@@ -54,7 +55,7 @@ func (m *switchWalletModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 		case "enter":
 			if len(m.wallets) == 0 {
-				return m, Navigate(config.HomePage)
+				return m, frame.Navigate(config.HomePage)
 			}
 			selected := m.wallets[m.cursor].Name
 			if err := m.ctx.WalletRepo.SetDefault(selected); err != nil {
@@ -62,13 +63,13 @@ func (m *switchWalletModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				return m, nil
 			}
 			// Generate a new receive address to accept a payment
-			return m, Navigate(config.HomePage)
+			return m, frame.Navigate(config.HomePage)
 		}
 	}
 	return m, nil
 }
 
-func (m *switchWalletModel) View() string {
+func (m *state) View() string {
 	view := "Switch active wallet\n\n"
 	if m.err != "" {
 		view += fmt.Sprintf("%s\n\n", m.err)

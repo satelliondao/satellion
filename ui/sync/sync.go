@@ -1,4 +1,4 @@
-package ui
+package sync
 
 import (
 	"fmt"
@@ -8,6 +8,7 @@ import (
 	"github.com/fatih/color"
 	"github.com/satelliondao/satellion/config"
 	"github.com/satelliondao/satellion/stdout"
+	"github.com/satelliondao/satellion/ui/frame"
 )
 
 type head struct {
@@ -23,28 +24,28 @@ type errorMsg struct {
 	err error
 }
 
-type syncModel struct {
-	ctx        *AppContext
+type state struct {
+	ctx        *frame.AppContext
 	head       head
 	peers      int
 	isComplete bool
 	err        error
 }
 
-func NewSync(ctx *AppContext) Page { return &syncModel{ctx: ctx} }
+func New(ctx *frame.AppContext) frame.Page { return &state{ctx: ctx} }
 
-func (s *syncModel) Init() tea.Cmd {
+func (s *state) Init() tea.Cmd {
 	if err := s.ctx.Router.StartChain(); err != nil {
 		return func() tea.Msg { return errorMsg{err: err} }
 	}
 	return tea.Tick(time.Second, func(t time.Time) tea.Msg { return tickMsg(t) })
 }
 
-func (s *syncModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+func (s *state) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch v := msg.(type) {
 	case tea.KeyMsg:
 		if stdout.ShouldQuit(v) {
-			return s, Navigate(config.HomePage)
+			return s, frame.Navigate(config.HomePage)
 		}
 	case tickMsg:
 		stamp, peers, err := s.ctx.Router.BestBlock()
@@ -64,9 +65,8 @@ func (s *syncModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return s, nil
 }
 
-func (s *syncModel) View() string {
+func (s *state) View() string {
 	if s.isComplete {
-		totalBalance := 0.0
 		blockTime := s.head.Timestamp.UTC().Format(time.RFC3339)
 		minutesAgo := int(time.Since(s.head.Timestamp).Minutes())
 		mempoolURL := ""
@@ -77,17 +77,14 @@ func (s *syncModel) View() string {
 			"Synchronization complete!\n"+
 				"Head at height: %d\n"+
 				"Block time:     %s (%d min ago)\n"+
-				"Total balance:  %.8f BTC\n"+
 				"Explore block:  %s\n\n"+
 				stdout.Quit(),
 			s.head.Height,
 			blockTime,
 			minutesAgo,
-			totalBalance,
 			mempoolURL,
 		)
 	}
-
 	return color.New(color.FgYellow).Sprintf(
 		"⏳ Syncing blockchain...\n"+
 			"Best height: %d\n"+

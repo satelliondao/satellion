@@ -25,7 +25,7 @@ func SaveAndVerify(t *testing.T) {
 	repo := New(db)
 	mnemonic := mnemonic.NewRandom()
 	name := "test-wallet"
-	wallet := wallet.New(mnemonic, name, 0)
+	wallet := wallet.New(mnemonic, name, 0, 0)
 	if err := repo.Save(wallet); err != nil {
 		t.Fatalf("save failed: %v", err)
 	}

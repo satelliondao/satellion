@@ -1,4 +1,4 @@
-package ui
+package wallet_create
 
 import (
 	"fmt"
@@ -8,33 +8,34 @@ import (
 	"github.com/fatih/color"
 	"github.com/satelliondao/satellion/config"
 	"github.com/satelliondao/satellion/mnemonic"
+	"github.com/satelliondao/satellion/ui/frame"
 )
 
-type createWalletModel struct {
-	ctx                *AppContext
+type state struct {
+	ctx                *frame.AppContext
 	nameInput          textinput.Model
 	nameInputCompleted bool
 	mnemonic           *mnemonic.Mnemonic
 }
 
-func initialModel(ctx *AppContext) createWalletModel {
+func initialState(ctx *frame.AppContext) state {
 	i := textinput.New()
 	i.Placeholder = "Enter wallet name"
 	i.Focus()
 	i.CharLimit = 50
 	i.Width = 20
-	return createWalletModel{ctx: ctx, nameInput: i}
+	return state{ctx: ctx, nameInput: i}
 }
 
-func NewCreateWallet(ctx *AppContext) Page {
-	return initialModel(ctx)
+func New(ctx *frame.AppContext) frame.Page {
+	return initialState(ctx)
 }
 
-func (m createWalletModel) Init() tea.Cmd {
+func (m state) Init() tea.Cmd {
 	return textinput.Blink
 }
 
-func (m createWalletModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+func (m state) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var cmd tea.Cmd
 
 	switch msg := msg.(type) {
@@ -51,7 +52,7 @@ func (m createWalletModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					m.ctx.TempWalletName = m.nameInput.Value()
 					m.ctx.TempMnemonic = m.mnemonic
 				}
-				return m, Navigate(config.VerifyMnemonicPage)
+				return m, frame.Navigate(config.VerifyMnemonicPage)
 			}
 		}
 
@@ -64,7 +65,7 @@ func (m createWalletModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return m, cmd
 }
 
-func (m createWalletModel) View() string {
+func (m state) View() string {
 	if m.mnemonic == nil {
 		return fmt.Sprintf("Get name for your wallet\n\n%s", m.nameInput.View())
 	}

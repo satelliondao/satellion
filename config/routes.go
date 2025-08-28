@@ -7,4 +7,6 @@ var (
 	VerifyMnemonicPage = "verify"
 	ListWalletsPage    = "list"
 	SwitchWalletPage   = "switch"
+	ReceivePage        = "receive"
+	SendPage           = "send"
 )

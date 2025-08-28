@@ -1,4 +1,4 @@
-package ui
+package home
 
 import (
 	"fmt"
@@ -6,33 +6,37 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/satelliondao/satellion/config"
 	"github.com/satelliondao/satellion/stdout"
+	"github.com/satelliondao/satellion/ui/frame"
 )
 
-type homeModel struct {
-	ctx          *AppContext
+type state struct {
+	ctx          *frame.AppContext
 	cursor       int
 	choices      []string
 	activeWallet string
 	walletsCount int
 }
 
-var (
-	MenuSyncBlockchain  = "Sync blockchain"
-	MenuCreateNewWallet = "Create new wallet"
-	MenuListWallets     = "List wallets"
-	MenuSwitchWallet    = "Switch active wallet"
-)
+type menuItem struct{ label, page string }
 
-var choices = []string{
-	MenuSyncBlockchain,
-	MenuCreateNewWallet,
-	MenuListWallets,
-	MenuSwitchWallet,
+var menuItems = []menuItem{
+	{label: "Receive", page: config.ReceivePage},
+	{label: "Send", page: config.SendPage},
+	{label: "Syncronize chain", page: config.SyncPage},
+	{label: "Create new wallet", page: config.CreateWalletPage},
+	{label: "List wallets", page: config.ListWalletsPage},
+	{label: "Switch active wallet", page: config.SwitchWalletPage},
 }
 
-func NewHome(ctx *AppContext) Page { return &homeModel{ctx: ctx, choices: choices} }
+func New(ctx *frame.AppContext) frame.Page {
+	labels := make([]string, len(menuItems))
+	for i := range menuItems {
+		labels[i] = menuItems[i].label
+	}
+	return &state{ctx: ctx, choices: labels}
+}
 
-func (m *homeModel) Init() tea.Cmd {
+func (m *state) Init() tea.Cmd {
 	wallets, err := m.ctx.Router.WalletRepo.GetAll()
 	if err == nil {
 		m.walletsCount = len(wallets)
@@ -45,7 +49,7 @@ func (m *homeModel) Init() tea.Cmd {
 	return nil
 }
 
-func (m *homeModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+func (m *state) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch v := msg.(type) {
 	case tea.KeyMsg:
 		if stdout.ShouldQuit(v) {
@@ -65,22 +69,13 @@ func (m *homeModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.cursor = 0
 			}
 		case "enter":
-			switch m.choices[m.cursor] {
-			case MenuCreateNewWallet:
-				return m, Navigate(config.CreateWalletPage)
-			case MenuListWallets:
-				return m, Navigate(config.ListWalletsPage)
-			case MenuSyncBlockchain:
-				return m, Navigate(config.SyncPage)
-			case MenuSwitchWallet:
-				return m, Navigate(config.SwitchWalletPage)
-			}
+			return m, frame.Navigate(menuItems[m.cursor].page)
 		}
 	}
 	return m, nil
 }
 
-func (m *homeModel) View() string {
+func (m *state) View() string {
 	title := stdout.Title() + "\n\n"
 	if m.walletsCount > 1 && m.activeWallet != "" {
 		title += fmt.Sprintf("Active wallet: %s\n\n", m.activeWallet)

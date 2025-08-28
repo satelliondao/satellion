@@ -171,5 +171,5 @@ func (s *WalletDB) GetActiveWalletName() (string, error) {
 
 func (s *WalletDB) toModel(entity WalletEntity) *wallet.Wallet {
 	mnemonic := mnemonic.New(entity.Mnemonic)
-	return wallet.New(&mnemonic, entity.Name, entity.NextIndex)
+	return wallet.New(&mnemonic, entity.Name, entity.NextChangeIndex, entity.NextReceiveIndex)
 }
