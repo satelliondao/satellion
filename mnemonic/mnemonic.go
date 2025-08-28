@@ -2,28 +2,35 @@ package mnemonic
 
 import (
 	"crypto/rand"
+	"crypto/sha512"
 	"math/big"
 	"strings"
+
+	"golang.org/x/crypto/pbkdf2"
 
 	mnemonic "github.com/satelliondao/satellion/mnemonic/wordlist"
 )
 
-const defaultMnemonicWordCount = 12
+const wordCount = 12
+const wordlistCount = 2048
 
 type Mnemonic struct {
 	Words []string
 }
 
-func New(words []string) *Mnemonic {
-	return &Mnemonic{
+func New(words []string) Mnemonic {
+	return Mnemonic{
 		Words: words,
 	}
 }
 
 func NewRandom() *Mnemonic {
-	out := make([]string, defaultMnemonicWordCount)
-	max := big.NewInt(int64(len(mnemonic.EnWordList)))
-	for i := 0; i < defaultMnemonicWordCount; i++ {
+	out := make([]string, wordCount)
+	if wordlistCount != len(mnemonic.EnWordList) {
+		panic("wordlist count mismatch")
+	}
+	max := big.NewInt(wordlistCount)
+	for i := 0; i < wordCount; i++ {
 		n, err := rand.Int(rand.Reader, max)
 		if err != nil {
 			panic("failed to generate random index")
@@ -42,4 +49,8 @@ func (m *Mnemonic) String() string {
 
 func (m *Mnemonic) Bytes() []byte {
 	return []byte(m.String())
+}
+
+func (m *Mnemonic) Seed(passphrase string) []byte {
+	return pbkdf2.Key([]byte(m.String()), []byte("mnemonic"+passphrase), 2048, 64, sha512.New)
 }

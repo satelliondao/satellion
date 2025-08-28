@@ -1,4 +1,4 @@
-package usecase
+package router
 
 import (
 	"fmt"
@@ -9,12 +9,12 @@ import (
 	"github.com/satelliondao/satellion/chain"
 	"github.com/satelliondao/satellion/config"
 	"github.com/satelliondao/satellion/mnemonic"
-	"github.com/satelliondao/satellion/ports"
+	"github.com/satelliondao/satellion/wallet"
 	"github.com/satelliondao/satellion/walletdb"
 )
 
 type Router struct {
-	WalletRepo ports.WalletRepository
+	WalletRepo *walletdb.WalletDB
 	Chain      *chain.Chain
 	Config     *config.Config
 }
@@ -35,7 +35,7 @@ func NewRouter() *Router {
 		os.Exit(1)
 	}
 	loaded, _ := config.Load()
-	repo := walletdb.NewWalletRepository(db)
+	repo := walletdb.New(db)
 	return &Router{WalletRepo: repo, Config: loaded}
 }
 
@@ -83,9 +83,9 @@ func (r *Router) MinPeers() int {
 }
 
 // AddWallet saves the mnemonic under the provided wallet name.
-func (r *Router) AddWallet(name string, m *mnemonic.Mnemonic) error {
-	if name == "" || m == nil {
+func (r *Router) AddWallet(name string, m mnemonic.Mnemonic) error {
+	if name == "" {
 		return fmt.Errorf("invalid wallet data")
 	}
-	return r.WalletRepo.Add(name, m)
+	return r.WalletRepo.Save(wallet.New(&m, name, 0))
 }

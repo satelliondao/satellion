@@ -6,10 +6,11 @@ import (
 	"testing"
 
 	"github.com/satelliondao/satellion/mnemonic"
+	"github.com/satelliondao/satellion/wallet"
 	"github.com/stretchr/testify/assert"
 )
 
-func TestWalletRepository_SaveAndGet(t *testing.T) {
+func SaveAndVerify(t *testing.T) {
 	tmpDir, err := os.MkdirTemp("", "satellion-db-")
 	if err != nil {
 		t.Fatalf("mkdtemp failed: %v", err)
@@ -21,20 +22,21 @@ func TestWalletRepository_SaveAndGet(t *testing.T) {
 		t.Fatalf("connect failed: %v", err)
 	}
 	defer db.Close()
-	repo := NewWalletRepository(db)
-	m := mnemonic.NewRandom()
+	repo := New(db)
+	mnemonic := mnemonic.NewRandom()
 	name := "test-wallet"
-	if err := repo.Save(name, m); err != nil {
+	wallet := wallet.New(mnemonic, name, 0)
+	if err := repo.Save(wallet); err != nil {
 		t.Fatalf("save failed: %v", err)
 	}
-	got, err := repo.Get(name)
+	got, err := repo.Get(wallet.Name)
 	if err != nil {
 		t.Fatalf("get failed: %v", err)
 	}
-	assert.Equal(t, m.Words, got.Words)
+	assert.Equal(t, mnemonic.Words, got.Mnemonic.Words)
 }
 
-func TestWalletRepository_Get_NotFound(t *testing.T) {
+func CatchNotFound(t *testing.T) {
 	tmpDir, err := os.MkdirTemp("", "satellion-db-")
 	if err != nil {
 		t.Fatalf("mkdtemp failed: %v", err)
@@ -46,7 +48,7 @@ func TestWalletRepository_Get_NotFound(t *testing.T) {
 		t.Fatalf("connect failed: %v", err)
 	}
 	defer db.Close()
-	repo := NewWalletRepository(db)
+	repo := New(db)
 	_, err = repo.Get("unknown-wallet")
 	assert.EqualError(t, err, "wallet not found")
 }

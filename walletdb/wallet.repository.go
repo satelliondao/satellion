@@ -3,6 +3,7 @@ package walletdb
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"strings"
 
 	"github.com/btcsuite/btcwallet/walletdb"
@@ -11,52 +12,54 @@ import (
 	"github.com/satelliondao/satellion/wallet"
 )
 
-type WalletRepository struct {
+type WalletDB struct {
 	db walletdb.DB
 }
 
-func NewWalletRepository(db walletdb.DB) *WalletRepository {
-	return &WalletRepository{db: db}
+func New(db walletdb.DB) *WalletDB {
+	return &WalletDB{db: db}
 }
 
-func (s *WalletRepository) bucketName(name string) []byte {
+func (s *WalletDB) bucketName(name string) []byte {
 	return []byte("wallet_" + name)
 }
 
-func (s *WalletRepository) Save(wname string, m *mnemonic.Mnemonic) error {
+func (s *WalletDB) Add(w *wallet.Wallet) error {
+	return s.Save(w)
+}
+
+func (s *WalletDB) Save(w *wallet.Wallet) error {
 	return s.db.Update(func(tx bdb.ReadWriteTx) error {
-		bucket := tx.ReadWriteBucket(s.bucketName(wname))
+		bucket := tx.ReadWriteBucket(s.bucketName(w.Name))
 		if bucket == nil {
-			b, createErr := tx.CreateTopLevelBucket(s.bucketName(wname))
+			b, createErr := tx.CreateTopLevelBucket(s.bucketName(w.Name))
 			if createErr != nil {
 				return createErr
 			}
 			bucket = b
 		}
-		entity := WalletEntity{Name: wname, Mnemonic: m.String()}
-		out, marshalErr := json.Marshal(entity)
+		out, marshalErr := json.Marshal(NewWalletEntity(w))
 		if marshalErr != nil {
 			return marshalErr
 		}
-		return bucket.Put(s.bucketName(wname), out)
+		return bucket.Put(s.bucketName(w.Name), out)
 	}, func() {})
 }
 
-func (s *WalletRepository) Get(wname string) (*mnemonic.Mnemonic, error) {
+func (s *WalletDB) Get(wname string) (*wallet.Wallet, error) {
 	var entity WalletEntity
 	err := s.db.View(func(tx bdb.ReadTx) error {
 		bucketName := s.bucketName(wname)
 		bucket := tx.ReadBucket(bucketName)
 		if bucket == nil {
-			return nil
+			return errors.New("wallet not found")
 		}
 		raw := bucket.Get(bucketName)
 		if len(raw) == 0 {
 			legacy := bucket.Get([]byte(wname))
 			if len(legacy) == 0 {
-				return nil
+				return errors.New("wallet not found")
 			}
-			entity.Mnemonic = string(legacy)
 			return nil
 		}
 		return json.Unmarshal(raw, &entity)
@@ -64,23 +67,27 @@ func (s *WalletRepository) Get(wname string) (*mnemonic.Mnemonic, error) {
 	if err != nil {
 		return nil, err
 	}
-	if entity.Mnemonic == "" {
-		return nil, errors.New("wallet not found")
-	}
-	return mnemonic.New(strings.Split(entity.Mnemonic, " ")), nil
+	return s.toModel(entity), nil
 }
 
-func (s *WalletRepository) Add(wname string, m *mnemonic.Mnemonic) error {
-	return s.Save(wname, m)
-}
-
-func (s *WalletRepository) GetAll() ([]wallet.Wallet, error) {
+func (s *WalletDB) GetAll() ([]wallet.Wallet, error) {
 	var list []wallet.Wallet
+
 	err := s.db.View(func(tx bdb.ReadTx) error {
 		return tx.ForEachBucket(func(k []byte) error {
-			name := string(k)
-			if strings.HasPrefix(name, "wallet_") {
-				list = append(list, wallet.Wallet{Name: strings.TrimPrefix(name, "wallet_")})
+			key := string(k)
+			if strings.HasPrefix(key, "wallet_") {
+				raw := tx.ReadBucket(k).Get(k)
+				if len(raw) == 0 {
+					return nil
+				}
+
+				entity := WalletEntity{}
+				if err := json.Unmarshal(raw, &entity); err != nil {
+					fmt.Println("failed to unmarshal wallet: ", err)
+					return nil
+				}
+				list = append(list, *s.toModel(entity))
 			}
 			return nil
 		})
@@ -91,16 +98,17 @@ func (s *WalletRepository) GetAll() ([]wallet.Wallet, error) {
 	return list, nil
 }
 
-func (s *WalletRepository) Delete(wname string) error {
+func (s *WalletDB) Delete(wname string) error {
+	key := s.bucketName(wname)
 	return s.db.Update(func(tx bdb.ReadWriteTx) error {
-		if idx := tx.ReadWriteBucket(walletStoreKey); idx != nil {
-			_ = idx.Delete([]byte(wname))
+		if idx := tx.ReadWriteBucket(key); idx != nil {
+			_ = idx.Delete(key)
 		}
-		return tx.DeleteTopLevelBucket(s.bucketName(wname))
+		return tx.DeleteTopLevelBucket(key)
 	}, func() {})
 }
 
-func (s *WalletRepository) SetDefault(wname string) error {
+func (s *WalletDB) SetDefault(wname string) error {
 	return s.db.Update(func(tx bdb.ReadWriteTx) error {
 		idx := tx.ReadWriteBucket(walletStoreKey)
 		if idx == nil {
@@ -112,4 +120,9 @@ func (s *WalletRepository) SetDefault(wname string) error {
 		}
 		return idx.Put([]byte("__default__"), []byte(wname))
 	}, func() {})
+}
+
+func (s *WalletDB) toModel(entity WalletEntity) *wallet.Wallet {
+	mnemonic := mnemonic.New(entity.Mnemonic)
+	return wallet.New(&mnemonic, entity.Name, entity.NextIndex)
 }

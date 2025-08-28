@@ -3,12 +3,12 @@ package main
 import (
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/satelliondao/satellion/config"
-	usecase "github.com/satelliondao/satellion/router"
+	"github.com/satelliondao/satellion/router"
 	"github.com/satelliondao/satellion/ui"
 )
 
 func main() {
-	r := usecase.NewRouter()
+	r := router.NewRouter()
 	ctx := ui.NewContext(r)
 	pages := map[string]ui.PageFactory{
 		config.HomePage:           ui.NewHome,

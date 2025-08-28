@@ -77,7 +77,7 @@ func (m verifyMnemonicModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			// 	m.err = "Words do not match. Try again."
 			// 	return m, nil
 			// }
-			if err := m.ctx.Router.AddWallet(m.ctx.TempWalletName, m.mnemonic); err != nil {
+			if err := m.ctx.Router.AddWallet(m.ctx.TempWalletName, *m.mnemonic); err != nil {
 				m.err = err.Error()
 				return m, nil
 			}
