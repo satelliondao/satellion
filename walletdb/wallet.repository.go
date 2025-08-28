@@ -12,6 +12,8 @@ import (
 	"github.com/satelliondao/satellion/wallet"
 )
 
+const ActiveWalletKey = "active_wallet"
+
 type WalletDB struct {
 	db walletdb.DB
 }
@@ -20,8 +22,8 @@ func New(db walletdb.DB) *WalletDB {
 	return &WalletDB{db: db}
 }
 
-func (s *WalletDB) bucketName(name string) []byte {
-	return []byte("wallet_" + name)
+func (s *WalletDB) getKey(wname string) []byte {
+	return []byte("wallet_" + wname)
 }
 
 func (s *WalletDB) Add(w *wallet.Wallet) error {
@@ -29,10 +31,11 @@ func (s *WalletDB) Add(w *wallet.Wallet) error {
 }
 
 func (s *WalletDB) Save(w *wallet.Wallet) error {
+	key := s.getKey(w.Name)
 	return s.db.Update(func(tx bdb.ReadWriteTx) error {
-		bucket := tx.ReadWriteBucket(s.bucketName(w.Name))
+		bucket := tx.ReadWriteBucket(key)
 		if bucket == nil {
-			b, createErr := tx.CreateTopLevelBucket(s.bucketName(w.Name))
+			b, createErr := tx.CreateTopLevelBucket(key)
 			if createErr != nil {
 				return createErr
 			}
@@ -42,25 +45,22 @@ func (s *WalletDB) Save(w *wallet.Wallet) error {
 		if marshalErr != nil {
 			return marshalErr
 		}
-		return bucket.Put(s.bucketName(w.Name), out)
+		return bucket.Put(key, out)
 	}, func() {})
 }
 
 func (s *WalletDB) Get(wname string) (*wallet.Wallet, error) {
 	var entity WalletEntity
+	e := errors.New("wallet not found")
 	err := s.db.View(func(tx bdb.ReadTx) error {
-		bucketName := s.bucketName(wname)
-		bucket := tx.ReadBucket(bucketName)
+		key := s.getKey(wname)
+		bucket := tx.ReadBucket(key)
 		if bucket == nil {
-			return errors.New("wallet not found")
+			return e
 		}
-		raw := bucket.Get(bucketName)
+		raw := bucket.Get(key)
 		if len(raw) == 0 {
-			legacy := bucket.Get([]byte(wname))
-			if len(legacy) == 0 {
-				return errors.New("wallet not found")
-			}
-			return nil
+			return e
 		}
 		return json.Unmarshal(raw, &entity)
 	}, func() {})
@@ -99,7 +99,7 @@ func (s *WalletDB) GetAll() ([]wallet.Wallet, error) {
 }
 
 func (s *WalletDB) Delete(wname string) error {
-	key := s.bucketName(wname)
+	key := s.getKey(wname)
 	return s.db.Update(func(tx bdb.ReadWriteTx) error {
 		if idx := tx.ReadWriteBucket(key); idx != nil {
 			_ = idx.Delete(key)
@@ -118,8 +118,55 @@ func (s *WalletDB) SetDefault(wname string) error {
 			}
 			idx = b
 		}
-		return idx.Put([]byte("__default__"), []byte(wname))
+		return idx.Put([]byte(ActiveWalletKey), []byte(wname))
 	}, func() {})
+}
+func (s *WalletDB) GetActiveWallet() (*wallet.Wallet, error) {
+	walletName, err := s.GetActiveWalletName()
+	e := errors.New("default wallet not set")
+	if err != nil {
+		return nil, err
+	}
+
+	var entity WalletEntity
+	key := s.getKey(walletName)
+	err = s.db.View(func(tx bdb.ReadTx) error {
+		bucket := tx.ReadBucket(key)
+		if bucket == nil {
+			return e
+		}
+		raw := bucket.Get(key)
+		if len(raw) == 0 {
+			return e
+		}
+		return json.Unmarshal(raw, &entity)
+	}, func() {})
+	if err != nil {
+		return nil, err
+	}
+	return s.toModel(entity), nil
+}
+
+func (s *WalletDB) GetActiveWalletName() (string, error) {
+	var walletName string
+	e := errors.New("default wallet not set")
+
+	err := s.db.View(func(tx bdb.ReadTx) error {
+		idx := tx.ReadBucket(walletStoreKey)
+		if idx == nil {
+			return e
+		}
+		raw := idx.Get([]byte(ActiveWalletKey))
+		if len(raw) == 0 {
+			return e
+		}
+		walletName = string(raw)
+		return nil
+	}, func() {})
+	if err != nil {
+		return "", err
+	}
+	return walletName, nil
 }
 
 func (s *WalletDB) toModel(entity WalletEntity) *wallet.Wallet {

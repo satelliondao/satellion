@@ -4,32 +4,46 @@ import (
 	"fmt"
 
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/satelliondao/satellion/config"
 	"github.com/satelliondao/satellion/stdout"
 )
 
 type homeModel struct {
-	ctx     *AppContext
-	cursor  int
-	choices []string
+	ctx          *AppContext
+	cursor       int
+	choices      []string
+	activeWallet string
+	walletsCount int
 }
 
 var (
 	MenuSyncBlockchain  = "Sync blockchain"
 	MenuCreateNewWallet = "Create new wallet"
 	MenuListWallets     = "List wallets"
+	MenuSwitchWallet    = "Switch active wallet"
 )
 
 var choices = []string{
 	MenuSyncBlockchain,
 	MenuCreateNewWallet,
 	MenuListWallets,
+	MenuSwitchWallet,
 }
 
-func NewHome(ctx *AppContext) Page {
-	return &homeModel{ctx: ctx, choices: choices}
-}
+func NewHome(ctx *AppContext) Page { return &homeModel{ctx: ctx, choices: choices} }
 
-func (m *homeModel) Init() tea.Cmd { return nil }
+func (m *homeModel) Init() tea.Cmd {
+	wallets, err := m.ctx.Router.WalletRepo.GetAll()
+	if err == nil {
+		m.walletsCount = len(wallets)
+		if m.walletsCount > 1 {
+			if name, derr := m.ctx.Router.WalletRepo.GetActiveWalletName(); derr == nil {
+				m.activeWallet = name
+			}
+		}
+	}
+	return nil
+}
 
 func (m *homeModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch v := msg.(type) {
@@ -53,21 +67,13 @@ func (m *homeModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "enter":
 			switch m.choices[m.cursor] {
 			case MenuCreateNewWallet:
-				return m, Navigate("create")
+				return m, Navigate(config.CreateWalletPage)
 			case MenuListWallets:
-				return m, Navigate("list")
-			// 	return m, nil
-			// case "Import wallet from seed":
-			// 	m.ctx.Router.ImportWalletFromSeed()
-			// 	return m, nil
-			// case "Show wallet info":
-			// 	m.ctx.Router.ShowWalletInfo()
-			// 	return m, nil
-			// case "List wallets":
-			// 	m.ctx.Router.ListWallets()
-			// return m, nil
+				return m, Navigate(config.ListWalletsPage)
 			case MenuSyncBlockchain:
-				return m, Navigate("sync")
+				return m, Navigate(config.SyncPage)
+			case MenuSwitchWallet:
+				return m, Navigate(config.SwitchWalletPage)
 			}
 		}
 	}
@@ -76,6 +82,9 @@ func (m *homeModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 func (m *homeModel) View() string {
 	title := stdout.Title() + "\n\n"
+	if m.walletsCount > 1 && m.activeWallet != "" {
+		title += fmt.Sprintf("Active wallet: %s\n\n", m.activeWallet)
+	}
 	for i, choice := range m.choices {
 		cursor := " "
 		if m.cursor == i {

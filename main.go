@@ -16,6 +16,7 @@ func main() {
 		config.CreateWalletPage:   ui.NewCreateWallet,
 		config.VerifyMnemonicPage: ui.NewVerifyMnemonic,
 		config.ListWalletsPage:    ui.NewListWallets,
+		config.SwitchWalletPage:   ui.NewSwitchWallet,
 	}
 	app := ui.NewApp(ctx, pages, config.HomePage)
 	_, _ = tea.NewProgram(app, tea.WithAltScreen()).Run()

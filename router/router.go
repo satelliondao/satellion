@@ -87,5 +87,9 @@ func (r *Router) AddWallet(name string, m mnemonic.Mnemonic) error {
 	if name == "" {
 		return fmt.Errorf("invalid wallet data")
 	}
-	return r.WalletRepo.Save(wallet.New(&m, name, 0))
+	err := r.WalletRepo.Save(wallet.New(&m, name, 0))
+	if err != nil {
+		return err
+	}
+	return r.WalletRepo.SetDefault(name)
 }
