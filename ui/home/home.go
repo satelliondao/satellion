@@ -12,11 +12,10 @@ import (
 )
 
 type state struct {
-	ctx     *frame.AppContext
-	cursor  int
-	choices []string
-	w       *wallet.Wallet
-	items   []menuItem
+	ctx      *frame.AppContext
+	selector *frame.ChoiceSelector
+	w        *wallet.Wallet
+	items    []menuItem
 }
 
 type menuItem struct{ label, page string }
@@ -40,12 +39,16 @@ func (m *state) rebuildMenu() {
 	items := make([]menuItem, 0, len(baseMenuItems)+1)
 	items = append(items, baseMenuItems...)
 	m.items = items
-	m.choices = make([]string, len(items))
-	for i := range items {
-		m.choices[i] = items[i].label
+
+	choices := make([]frame.Choice, len(items))
+	for i, item := range items {
+		choices[i] = frame.Choice{Label: item.label, Value: item.page}
 	}
-	if m.cursor >= len(m.choices) {
-		m.cursor = 0
+
+	if m.selector == nil {
+		m.selector = frame.NewChoiceSelector(choices)
+	} else {
+		m.selector.SetChoices(choices)
 	}
 }
 
@@ -59,32 +62,21 @@ func (m *state) Init() tea.Cmd {
 }
 
 func (m *state) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
-	switch v := msg.(type) {
-	case tea.KeyMsg:
-		if stdout.ShouldQuit(v) {
-			return m, tea.Quit
-		}
-		switch v.String() {
-		case "up", "k":
-			if m.cursor > 0 {
-				m.cursor--
-			} else {
-				m.cursor = len(m.choices) - 1
+	result := m.selector.Update(msg)
+	// Handle selection results
+	if result.Action == frame.ActionSelection && result.Selected != nil {
+		return m, frame.Navigate(result.Selected.Value.(string))
+	}
+	// Handle other key messages if not consumed by selector
+	if !result.Consumed {
+		switch v := msg.(type) {
+		case tea.KeyMsg:
+			if stdout.ShouldQuit(v) {
+				return m, tea.Quit
 			}
-		case "down", "j":
-			if m.cursor < len(m.choices)-1 {
-				m.cursor++
-			} else {
-				m.cursor = 0
-			}
-		case "enter":
-			if len(m.items) == 0 {
-				return m, nil
-			}
-			selected := m.items[m.cursor]
-			return m, frame.Navigate(selected.page)
 		}
 	}
+
 	return m, nil
 }
 
@@ -93,12 +85,6 @@ func (m *state) View() string {
 	if m.w != nil {
 		v.Line(fmt.Sprintf("Wallet %s\n", color.New(color.Bold).Sprintf("%s", m.w.Name)))
 	}
-	for i, choice := range m.choices {
-		cursor := " "
-		if m.cursor == i {
-			cursor = ">"
-		}
-		v.Line(fmt.Sprintf("%s %s", cursor, choice))
-	}
+	v.Line(m.selector.Render())
 	return v.Build()
 }

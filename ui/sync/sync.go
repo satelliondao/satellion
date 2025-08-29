@@ -47,6 +47,9 @@ func (s *state) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		if stdout.ShouldQuit(v) {
 			return s, frame.Navigate(config.HomePage)
 		}
+		if v.Type == tea.KeyEsc {
+			return s, frame.Navigate(config.HomePage)
+		}
 	case tickMsg:
 		stamp, peers, err := s.ctx.Router.BestBlock()
 		if err != nil {

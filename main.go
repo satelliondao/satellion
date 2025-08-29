@@ -6,6 +6,7 @@ import (
 	"github.com/satelliondao/satellion/router"
 	"github.com/satelliondao/satellion/ui/frame"
 	"github.com/satelliondao/satellion/ui/home"
+	"github.com/satelliondao/satellion/ui/receive"
 	"github.com/satelliondao/satellion/ui/sync"
 	"github.com/satelliondao/satellion/ui/wallet_create"
 	"github.com/satelliondao/satellion/ui/wallet_list"
@@ -25,6 +26,7 @@ func main() {
 		config.ListWalletsPage:    wallet_list.New,
 		config.SwitchWalletPage:   wallet_switch.New,
 		config.UnlockWalletPage:   wallet_unlock.New,
+		config.ReceivePage:        receive.New,
 	}
 	startPage := config.UnlockWalletPage
 

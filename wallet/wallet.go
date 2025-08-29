@@ -55,10 +55,39 @@ func (w *Wallet) DeriveChild(index uint32) (*hdkeychain.ExtendedKey, error) {
 	if err != nil {
 		return nil, err
 	}
-	w.NextChangeIndex++
 	return child, nil
 }
 
 func (w *Wallet) NextIndex() uint32 {
 	return w.NextChangeIndex
+}
+
+func (w *Wallet) DeriveReceiveAddress() (*Address, error) {
+	standart, err := w.RootKey.Derive(hdkeychain.HardenedKeyStart + 44)
+	if err != nil {
+		return nil, err
+	}
+	coin, err := standart.Derive(hdkeychain.HardenedKeyStart)
+	if err != nil {
+		return nil, err
+	}
+	account, err := coin.Derive(hdkeychain.HardenedKeyStart)
+	if err != nil {
+		return nil, err
+	}
+	change, err := account.Derive(0)
+	if err != nil {
+		return nil, err
+	}
+	receive, err := change.Derive(w.NextReceiveIndex)
+	if err != nil {
+		return nil, err
+	}
+	addr, err := receive.Address(&chaincfg.MainNetParams)
+	if err != nil {
+		return nil, err
+	}
+	a := NewAddress(addr.EncodeAddress(), false, w.NextReceiveIndex)
+	w.NextReceiveIndex++
+	return a, nil
 }
