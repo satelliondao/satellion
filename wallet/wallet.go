@@ -62,7 +62,7 @@ func (w *Wallet) NextIndex() uint32 {
 	return w.NextChangeIndex
 }
 
-func (w *Wallet) DeriveReceiveAddress() (*Address, error) {
+func (w *Wallet) ReceiveAddress() (*Address, error) {
 	standart, err := w.RootKey.Derive(hdkeychain.HardenedKeyStart + 44)
 	if err != nil {
 		return nil, err
@@ -88,6 +88,10 @@ func (w *Wallet) DeriveReceiveAddress() (*Address, error) {
 		return nil, err
 	}
 	a := NewAddress(addr.EncodeAddress(), false, w.NextReceiveIndex)
-	w.NextReceiveIndex++
 	return a, nil
+}
+
+func (w *Wallet) NewReceiveAddress() (*Address, error) {
+	w.NextReceiveIndex++
+	return w.ReceiveAddress()
 }

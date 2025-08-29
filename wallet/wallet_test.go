@@ -18,7 +18,7 @@ func TestDeriveReceiveAddress(t *testing.T) {
 	t.Run("BasicDeriveReceiveAddress", func(t *testing.T) {
 		wallet := New(testMnemonic, passphrase, name, 1, 1, "")
 		initialNextReceiveIndex := wallet.NextReceiveIndex
-		address, err := wallet.DeriveReceiveAddress()
+		address, err := wallet.ReceiveAddress()
 
 		assert.NoError(t, err)
 		assert.False(t, address.Change, "Receive address should have Change=false")

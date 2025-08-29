@@ -22,7 +22,7 @@ func NewViewBuilder() *ViewBuilder {
 
 func (b *ViewBuilder) withLogo() *ViewBuilder {
 	title := "SATELLION WALLET"
-	b.v = color.New(color.BgHiWhite).Sprintf("%s\n", color.New(color.Bold).Sprintf("%s", title))
+	b.v = fmt.Sprintf("%s\n", color.New(color.Bold).Sprintf("%s", title))
 	b.v += "\n"
 	return b
 }
@@ -33,7 +33,7 @@ func (b *ViewBuilder) Line(s string) *ViewBuilder {
 }
 
 func (b *ViewBuilder) WithHelpText(s string) *ViewBuilder {
-	b.helpText = s
+	b.helpText += fmt.Sprintf("%s\n", s)
 	return b
 }
 
