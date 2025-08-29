@@ -10,6 +10,7 @@ import (
 	"github.com/satelliondao/satellion/ui/wallet_create"
 	"github.com/satelliondao/satellion/ui/wallet_list"
 	"github.com/satelliondao/satellion/ui/wallet_switch"
+	"github.com/satelliondao/satellion/ui/wallet_unlock"
 )
 
 func main() {
@@ -20,9 +21,18 @@ func main() {
 		config.SyncPage:           sync.New,
 		config.CreateWalletPage:   wallet_create.New,
 		config.VerifyMnemonicPage: wallet_create.NewVerify,
+		config.PassphrasePage:     wallet_create.NewPassphrase,
 		config.ListWalletsPage:    wallet_list.New,
 		config.SwitchWalletPage:   wallet_switch.New,
+		config.UnlockWalletPage:   wallet_unlock.New,
 	}
-	app := frame.NewApp(ctx, pages, config.HomePage)
+	startPage := config.UnlockWalletPage
+
+	count, err := ctx.WalletRepo.WalletCount()
+	if err == nil && count == 0 {
+		startPage = config.CreateWalletPage
+	}
+
+	app := frame.NewApp(ctx, pages, startPage)
 	_, _ = tea.NewProgram(app, tea.WithAltScreen()).Run()
 }

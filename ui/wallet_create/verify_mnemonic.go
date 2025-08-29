@@ -78,13 +78,7 @@ func (m verifyState) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			// 	m.err = "Words do not match. Try again."
 			// 	return m, nil
 			// }
-			if err := m.ctx.Router.AddWallet(m.ctx.TempWalletName, *m.mnemonic); err != nil {
-				m.err = err.Error()
-				return m, nil
-			}
-			m.ctx.TempWalletName = ""
-			m.ctx.TempMnemonic = nil
-			return m, frame.Navigate(config.HomePage)
+			return m, frame.Navigate(config.PassphrasePage)
 		}
 	}
 	if len(m.inputs) > 0 {
@@ -110,18 +104,20 @@ func (m verifyState) isMnemonicValid() bool {
 }
 
 func (m verifyState) View() string {
+	v := frame.NewViewBuilder()
 	if m.mnemonic == nil {
 		return "Verify your mnemonic\n\nMnemonic not found. Press Esc to go back."
 	}
-	view := "Verify your mnemonic\n\nType the requested words to confirm.\n\n"
+	v.Line("Verify your mnemonic")
+	v.Line("Type the requested words to confirm.")
 	for i := 0; i < 3; i++ {
-		view += fmt.Sprintf("%s\n", m.inputs[i].View())
+		v.Line(m.inputs[i].View())
 	}
 	if m.err != "" {
-		view += fmt.Sprintf("\n%s\n", m.err)
+		v.Line(m.err)
 	}
 	if strings.TrimSpace(m.inputs[2].Value()) != "" {
-		view += "\nPress Enter to save"
+		v.Line("Press Enter to continue")
 	}
-	return view
+	return v.Build()
 }

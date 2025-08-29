@@ -62,20 +62,21 @@ func (m *state) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.err = err.Error()
 				return m, nil
 			}
-			// Generate a new receive address to accept a payment
-			return m, frame.Navigate(config.HomePage)
+			m.ctx.TempPassphrase = ""
+			return m, frame.Navigate(config.UnlockWalletPage)
 		}
 	}
 	return m, nil
 }
 
 func (m *state) View() string {
-	view := "Switch active wallet\n\n"
+	v := frame.NewViewBuilder()
+	v.Line("Switch active wallet")
 	if m.err != "" {
-		view += fmt.Sprintf("%s\n\n", m.err)
+		v.Line(m.err)
 	}
 	if len(m.wallets) == 0 {
-		return view + "No wallets found"
+		v.Line("No wallets found")
 	}
 	for i, w := range m.wallets {
 		cursor := " "
@@ -86,8 +87,7 @@ func (m *state) View() string {
 		if w.Name == m.active {
 			label += " (active)"
 		}
-		view += fmt.Sprintf("%s %s\n", cursor, label)
+		v.Line(fmt.Sprintf("%s %s", cursor, label))
 	}
-	view += "\nUse ↑/↓ to navigate, Enter to select, Esc to quit\n"
-	return view
+	return v.Build()
 }

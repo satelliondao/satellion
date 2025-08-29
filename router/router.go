@@ -1,6 +1,8 @@
 package router
 
 import (
+	"crypto/sha256"
+	"encoding/hex"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -83,13 +85,31 @@ func (r *Router) MinPeers() int {
 }
 
 // AddWallet saves the mnemonic under the provided wallet name.
-func (r *Router) AddWallet(name string, m mnemonic.Mnemonic) error {
+func (r *Router) AddWallet(name string, m mnemonic.Mnemonic, passphrase string) error {
 	if name == "" {
 		return fmt.Errorf("invalid wallet data")
 	}
-	err := r.WalletRepo.Save(wallet.New(&m, name, 0, 0))
+	err := r.WalletRepo.Save(wallet.New(&m, passphrase, name, 0, 0, ""))
 	if err != nil {
 		return err
 	}
 	return r.WalletRepo.SetDefault(name)
+}
+
+// Unlock derives and stores the xprv for the active wallet using the provided 13th-word passphrase.
+func (r *Router) Unlock(passphrase string) error {
+	w, err := r.WalletRepo.GetActiveWallet(passphrase)
+	if err != nil {
+		return err
+	}
+	if w == nil || w.Mnemonic == nil {
+		return fmt.Errorf("no active wallet")
+	}
+	hashSeed := sha256.Sum256(w.Mnemonic.Seed(passphrase))
+	currentLock := hex.EncodeToString(hashSeed[:])
+
+	if w.Lock != currentLock {
+		return fmt.Errorf("invalid passphrase")
+	}
+	return nil
 }

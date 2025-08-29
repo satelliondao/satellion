@@ -49,7 +49,7 @@ func (s *WalletDB) Save(w *wallet.Wallet) error {
 	}, func() {})
 }
 
-func (s *WalletDB) Get(wname string) (*wallet.Wallet, error) {
+func (s *WalletDB) Get(wname string, passphrase string) (*wallet.Wallet, error) {
 	var entity WalletEntity
 	e := errors.New("wallet not found")
 	err := s.db.View(func(tx bdb.ReadTx) error {
@@ -67,7 +67,23 @@ func (s *WalletDB) Get(wname string) (*wallet.Wallet, error) {
 	if err != nil {
 		return nil, err
 	}
-	return s.toModel(entity), nil
+	return s.toModel(entity, passphrase), nil
+}
+
+func (s *WalletDB) WalletCount() (int, error) {
+	var count int
+	err := s.db.View(func(tx bdb.ReadTx) error {
+		return tx.ForEachBucket(func(k []byte) error {
+			if strings.HasPrefix(string(k), "wallet_") {
+				count++
+			}
+			return nil
+		})
+	}, func() {})
+	if err != nil {
+		return 0, err
+	}
+	return count, nil
 }
 
 func (s *WalletDB) GetAll() ([]wallet.Wallet, error) {
@@ -87,7 +103,7 @@ func (s *WalletDB) GetAll() ([]wallet.Wallet, error) {
 					fmt.Println("failed to unmarshal wallet: ", err)
 					return nil
 				}
-				list = append(list, *s.toModel(entity))
+				list = append(list, *s.toModel(entity, ""))
 			}
 			return nil
 		})
@@ -121,7 +137,8 @@ func (s *WalletDB) SetDefault(wname string) error {
 		return idx.Put([]byte(ActiveWalletKey), []byte(wname))
 	}, func() {})
 }
-func (s *WalletDB) GetActiveWallet() (*wallet.Wallet, error) {
+
+func (s *WalletDB) GetActiveWallet(passphrase string) (*wallet.Wallet, error) {
 	walletName, err := s.GetActiveWalletName()
 	e := errors.New("default wallet not set")
 	if err != nil {
@@ -144,7 +161,7 @@ func (s *WalletDB) GetActiveWallet() (*wallet.Wallet, error) {
 	if err != nil {
 		return nil, err
 	}
-	return s.toModel(entity), nil
+	return s.toModel(entity, passphrase), nil
 }
 
 func (s *WalletDB) GetActiveWalletName() (string, error) {
@@ -169,7 +186,7 @@ func (s *WalletDB) GetActiveWalletName() (string, error) {
 	return walletName, nil
 }
 
-func (s *WalletDB) toModel(entity WalletEntity) *wallet.Wallet {
-	mnemonic := mnemonic.New(entity.Mnemonic)
-	return wallet.New(&mnemonic, entity.Name, entity.NextChangeIndex, entity.NextReceiveIndex)
+func (s *WalletDB) toModel(w WalletEntity, passphrase string) *wallet.Wallet {
+	mnemonic := mnemonic.New(w.Mnemonic)
+	return wallet.New(&mnemonic, passphrase, w.Name, w.NextChangeIndex, w.NextReceiveIndex, w.Lock)
 }

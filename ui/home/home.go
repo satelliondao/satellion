@@ -4,48 +4,57 @@ import (
 	"fmt"
 
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/fatih/color"
 	"github.com/satelliondao/satellion/config"
 	"github.com/satelliondao/satellion/stdout"
 	"github.com/satelliondao/satellion/ui/frame"
+	"github.com/satelliondao/satellion/wallet"
 )
 
 type state struct {
-	ctx          *frame.AppContext
-	cursor       int
-	choices      []string
-	activeWallet string
-	walletsCount int
+	ctx     *frame.AppContext
+	cursor  int
+	choices []string
+	w       *wallet.Wallet
+	items   []menuItem
 }
 
 type menuItem struct{ label, page string }
+type errorMsg struct {
+	err error
+}
 
-var menuItems = []menuItem{
+var baseMenuItems = []menuItem{
 	{label: "Receive", page: config.ReceivePage},
 	{label: "Send", page: config.SendPage},
-	{label: "Syncronize chain", page: config.SyncPage},
-	{label: "Create new wallet", page: config.CreateWalletPage},
-	{label: "List wallets", page: config.ListWalletsPage},
-	{label: "Switch active wallet", page: config.SwitchWalletPage},
+	{label: "Sync chain", page: config.SyncPage},
 }
 
 func New(ctx *frame.AppContext) frame.Page {
-	labels := make([]string, len(menuItems))
-	for i := range menuItems {
-		labels[i] = menuItems[i].label
+	m := &state{ctx: ctx}
+	m.rebuildMenu()
+	return m
+}
+
+func (m *state) rebuildMenu() {
+	items := make([]menuItem, 0, len(baseMenuItems)+1)
+	items = append(items, baseMenuItems...)
+	m.items = items
+	m.choices = make([]string, len(items))
+	for i := range items {
+		m.choices[i] = items[i].label
 	}
-	return &state{ctx: ctx, choices: labels}
+	if m.cursor >= len(m.choices) {
+		m.cursor = 0
+	}
 }
 
 func (m *state) Init() tea.Cmd {
-	wallets, err := m.ctx.Router.WalletRepo.GetAll()
-	if err == nil {
-		m.walletsCount = len(wallets)
-		if m.walletsCount > 1 {
-			if name, derr := m.ctx.Router.WalletRepo.GetActiveWalletName(); derr == nil {
-				m.activeWallet = name
-			}
-		}
+	wallet, err := m.ctx.Router.WalletRepo.GetActiveWallet(m.ctx.TempPassphrase)
+	if err != nil {
+		return func() tea.Msg { return errorMsg{err: err} }
 	}
+	m.w = wallet
 	return nil
 }
 
@@ -69,24 +78,27 @@ func (m *state) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.cursor = 0
 			}
 		case "enter":
-			return m, frame.Navigate(menuItems[m.cursor].page)
+			if len(m.items) == 0 {
+				return m, nil
+			}
+			selected := m.items[m.cursor]
+			return m, frame.Navigate(selected.page)
 		}
 	}
 	return m, nil
 }
 
 func (m *state) View() string {
-	title := stdout.Title() + "\n\n"
-	if m.walletsCount > 1 && m.activeWallet != "" {
-		title += fmt.Sprintf("Active wallet: %s\n\n", m.activeWallet)
+	v := frame.NewViewBuilder()
+	if m.w != nil {
+		v.Line(fmt.Sprintf("Wallet %s\n", color.New(color.Bold).Sprintf("%s", m.w.Name)))
 	}
 	for i, choice := range m.choices {
 		cursor := " "
 		if m.cursor == i {
 			cursor = ">"
 		}
-		title += fmt.Sprintf("%s %s\n", cursor, choice)
+		v.Line(fmt.Sprintf("%s %s", cursor, choice))
 	}
-	title += "\nUse ↑/↓ to navigate, Enter to select, Esc to quit\n"
-	return title
+	return v.Build()
 }

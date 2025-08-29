@@ -5,6 +5,7 @@ import "github.com/satelliondao/satellion/wallet"
 type WalletEntity struct {
 	Name             string   `json:"name"`
 	Mnemonic         []string `json:"mnemonic"`
+	Lock             string   `json:"lock"`
 	NextChangeIndex  uint32   `json:"next_change_index"`
 	NextReceiveIndex uint32   `json:"next_receive_index"`
 }
@@ -19,6 +20,7 @@ func NewWalletEntity(w *wallet.Wallet) *WalletEntity {
 	return &WalletEntity{
 		Name:             w.Name,
 		Mnemonic:         w.Mnemonic.Words,
+		Lock:             w.Lock,
 		NextChangeIndex:  w.NextChangeIndex,
 		NextReceiveIndex: w.NextReceiveIndex,
 	}

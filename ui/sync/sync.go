@@ -66,6 +66,8 @@ func (s *state) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (s *state) View() string {
+	v := frame.NewViewBuilder()
+
 	if s.isComplete {
 		blockTime := s.head.Timestamp.UTC().Format(time.RFC3339)
 		minutesAgo := int(time.Since(s.head.Timestamp).Minutes())
@@ -73,26 +75,27 @@ func (s *state) View() string {
 		if s.head.Height > 0 {
 			mempoolURL = "https://mempool.space/block/" + fmt.Sprintf("%d", s.head.Height)
 		}
-		return color.New(color.FgGreen).Sprintf(
-			"Synchronization complete!\n"+
+		v.Line(fmt.Sprintf(
+			color.New(color.FgGreen).Sprintf("Synchronization complete\n")+
 				"Head at height: %d\n"+
 				"Block time:     %s (%d min ago)\n"+
-				"Explore block:  %s\n\n"+
-				stdout.Quit(),
+				"Explore block:  %s",
 			s.head.Height,
 			blockTime,
 			minutesAgo,
 			mempoolURL,
-		)
+		))
+	} else {
+		v.Line(fmt.Sprintf(
+			"⏳ Syncing blockchain...\n"+
+				"Best height: %d\n"+
+				"Timestamp:   %s\n"+
+				"Peers:       %d",
+			s.head.Height,
+			s.head.Timestamp.UTC().Format(time.RFC3339),
+			s.peers,
+		))
 	}
-	return color.New(color.FgYellow).Sprintf(
-		"⏳ Syncing blockchain...\n"+
-			"Best height: %d\n"+
-			"Timestamp:   %s\n"+
-			"Peers:       %d\n\n"+
-			stdout.Quit(),
-		s.head.Height,
-		s.head.Timestamp.UTC().Format(time.RFC3339),
-		s.peers,
-	)
+
+	return v.Build()
 }

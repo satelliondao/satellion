@@ -1,6 +1,8 @@
 package wallet
 
 import (
+	"crypto/sha256"
+	"encoding/hex"
 	"fmt"
 
 	"github.com/btcsuite/btcd/btcutil/hdkeychain"
@@ -15,26 +17,37 @@ type Wallet struct {
 	NextReceiveIndex uint32
 	Name             string
 	IsDefault        bool
+	Passphrase       string
+	Lock             string
 }
 
 func New(
 	mnemonic *mnemonic.Mnemonic,
+	passphrase string,
 	name string,
 	nextChangeIndex uint32,
 	nextReceiveIndex uint32,
+	lock string,
 ) *Wallet {
-	seed := mnemonic.Seed("")
+	seed := mnemonic.Seed(passphrase)
 	rootKey, err := hdkeychain.NewMaster(seed, &chaincfg.MainNetParams)
 	if err != nil {
 		panic(fmt.Sprintf("failed to create root key: %v", err))
 	}
-	return &Wallet{
+	w := &Wallet{
 		RootKey:          rootKey,
 		NextChangeIndex:  nextChangeIndex,
 		NextReceiveIndex: nextReceiveIndex,
 		Name:             name,
 		Mnemonic:         mnemonic,
+		Passphrase:       passphrase,
+		Lock:             lock,
 	}
+	if lock == "" {
+		seedH := sha256.Sum256(seed)
+		w.Lock = hex.EncodeToString(seedH[:])
+	}
+	return w
 }
 
 func (w *Wallet) DeriveChild(index uint32) (*hdkeychain.ExtendedKey, error) {

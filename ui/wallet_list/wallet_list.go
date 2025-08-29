@@ -45,17 +45,21 @@ func (m *state) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (m *state) View() string {
-	view := "Wallet List\n\n"
-	if len(m.wallets) == 0 {
-		return "No wallets found"
-	}
+	v := frame.NewViewBuilder()
+
 	for i, w := range m.wallets {
-		mn, err := m.ctx.Router.WalletRepo.Get(w.Name)
+		mn, err := m.ctx.Router.WalletRepo.Get(w.Name, "")
 		mnemonicText := "<not found>"
 		if err == nil {
 			mnemonicText = mn.Mnemonic.String()
 		}
-		view += fmt.Sprintf("%d. %s\n   %s\n", i+1, w.Name, mnemonicText)
+		v.Line(fmt.Sprintf("%d. %s\n   %s\n", i+1, w.Name, mnemonicText))
 	}
-	return view
+
+	if len(m.wallets) == 0 {
+		v.Line("No wallets found")
+	}
+
+	v.WithQuitText()
+	return v.Build()
 }

@@ -11,6 +11,7 @@ type AppContext struct {
 	WalletRepo     *walletdb.WalletDB
 	TempWalletName string
 	TempMnemonic   *mnemonic.Mnemonic
+	TempPassphrase string
 }
 
 func NewContext(router *usecase.Router) *AppContext {

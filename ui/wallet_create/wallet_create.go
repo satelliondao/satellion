@@ -66,20 +66,20 @@ func (m state) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (m state) View() string {
+	v := frame.NewViewBuilder()
 	if m.mnemonic == nil {
-		return fmt.Sprintf("Get name for your wallet\n\n%s", m.nameInput.View())
+		v.Line("Get name for your wallet")
+		v.Line(m.nameInput.View())
+		return v.Build()
 	}
 
 	if m.mnemonic != nil {
-		return fmt.Sprintf(
-			"Wallet name: %s\n\n%s\n\n%s\n%s\n%s\n",
-			m.nameInput.Value(),
-			color.New(color.FgHiYellow).Sprintf("🔑 %s", m.mnemonic.String()),
-			"Please write down your seed phrase and keep it in a safe place.",
-			"You will be asked to verify it in the next step.",
-			"Press enter to continue",
-		)
+		v.Line(fmt.Sprintf("Wallet name: %s", m.nameInput.Value()))
+		v.Line(fmt.Sprintf("\n🔑 %s 🔑\n", m.mnemonic.String()))
+		v.Line(color.New(color.FgHiRed).Sprintf("Write down your private key and keep it in a safe place."))
+		v.Line("You will be asked to verify it in the next step.")
+		v.Line("Press enter to continue")
 	}
 
-	return ""
+	return v.WithQuitText().Build()
 }

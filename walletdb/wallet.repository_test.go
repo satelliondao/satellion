@@ -25,11 +25,11 @@ func SaveAndVerify(t *testing.T) {
 	repo := New(db)
 	mnemonic := mnemonic.NewRandom()
 	name := "test-wallet"
-	wallet := wallet.New(mnemonic, name, 0, 0)
+	wallet := wallet.New(mnemonic, "", name, 0, 0)
 	if err := repo.Save(wallet); err != nil {
 		t.Fatalf("save failed: %v", err)
 	}
-	got, err := repo.Get(wallet.Name)
+	got, err := repo.Get(wallet.Name, "")
 	if err != nil {
 		t.Fatalf("get failed: %v", err)
 	}
@@ -49,6 +49,6 @@ func CatchNotFound(t *testing.T) {
 	}
 	defer db.Close()
 	repo := New(db)
-	_, err = repo.Get("unknown-wallet")
+	_, err = repo.Get("unknown-wallet", "")
 	assert.EqualError(t, err, "wallet not found")
 }
