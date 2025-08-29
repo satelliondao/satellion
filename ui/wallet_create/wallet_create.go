@@ -6,9 +6,9 @@ import (
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/fatih/color"
-	"github.com/satelliondao/satellion/config"
 	"github.com/satelliondao/satellion/mnemonic"
 	"github.com/satelliondao/satellion/ui/frame"
+	"github.com/satelliondao/satellion/ui/frame/page"
 )
 
 type state struct {
@@ -52,7 +52,7 @@ func (m state) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					m.ctx.TempWalletName = m.nameInput.Value()
 					m.ctx.TempMnemonic = m.mnemonic
 				}
-				return m, frame.Navigate(config.VerifyMnemonicPage)
+				return m, frame.Navigate(page.VerifyMnemonic)
 			}
 		}
 

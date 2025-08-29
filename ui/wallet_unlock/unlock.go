@@ -6,8 +6,8 @@ import (
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/fatih/color"
-	"github.com/satelliondao/satellion/config"
 	"github.com/satelliondao/satellion/ui/frame"
+	"github.com/satelliondao/satellion/ui/frame/page"
 )
 
 type state struct {
@@ -55,7 +55,7 @@ func (m *state) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 		// Handle special shortcuts
 		if v.Type == tea.KeyCtrlS && v.String() == "ctrl+s" {
-			return m, frame.Navigate(config.SwitchWalletPage)
+			return m, frame.Navigate(page.SwitchWallet)
 		}
 
 		// Check if this is a navigation key that should be handled by choice selector
@@ -73,13 +73,13 @@ func (m *state) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 							return m, nil
 						}
 						m.ctx.TempPassphrase = pass
-						return m, frame.Navigate(config.HomePage)
+						return m, frame.Navigate(page.Home)
 					case "switch":
 						m.ctx.TempPassphrase = ""
 						m.input.SetValue("")
-						return m, frame.Navigate(config.SwitchWalletPage)
+						return m, frame.Navigate(page.SwitchWallet)
 					case "create":
-						return m, frame.Navigate(config.CreateWalletPage)
+						return m, frame.Navigate(page.CreateWallet)
 					}
 				}
 				return m, nil

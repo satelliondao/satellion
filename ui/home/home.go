@@ -5,9 +5,9 @@ import (
 
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/fatih/color"
-	"github.com/satelliondao/satellion/config"
 	"github.com/satelliondao/satellion/stdout"
 	"github.com/satelliondao/satellion/ui/frame"
+	"github.com/satelliondao/satellion/ui/frame/page"
 	"github.com/satelliondao/satellion/wallet"
 )
 
@@ -24,9 +24,9 @@ type errorMsg struct {
 }
 
 var baseMenuItems = []menuItem{
-	{label: "Receive", page: config.ReceivePage},
-	{label: "Send", page: config.SendPage},
-	{label: "Sync chain", page: config.SyncPage},
+	{label: "Receive", page: page.Receive},
+	{label: "Send", page: page.Send},
+	{label: "Sync chain", page: page.Sync},
 }
 
 func New(ctx *frame.AppContext) frame.Page {

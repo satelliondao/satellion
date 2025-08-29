@@ -2,9 +2,9 @@ package main
 
 import (
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/satelliondao/satellion/config"
 	"github.com/satelliondao/satellion/router"
 	"github.com/satelliondao/satellion/ui/frame"
+	"github.com/satelliondao/satellion/ui/frame/page"
 	"github.com/satelliondao/satellion/ui/home"
 	"github.com/satelliondao/satellion/ui/receive"
 	"github.com/satelliondao/satellion/ui/sync"
@@ -18,21 +18,21 @@ func main() {
 	r := router.NewRouter()
 	ctx := frame.NewContext(r)
 	pages := map[string]frame.PageFactory{
-		config.HomePage:           home.New,
-		config.SyncPage:           sync.New,
-		config.CreateWalletPage:   wallet_create.New,
-		config.VerifyMnemonicPage: wallet_create.NewVerify,
-		config.PassphrasePage:     wallet_create.NewPassphrase,
-		config.ListWalletsPage:    wallet_list.New,
-		config.SwitchWalletPage:   wallet_switch.New,
-		config.UnlockWalletPage:   wallet_unlock.New,
-		config.ReceivePage:        receive.New,
+		page.Home:           home.New,
+		page.Sync:           sync.New,
+		page.CreateWallet:   wallet_create.New,
+		page.VerifyMnemonic: wallet_create.NewVerify,
+		page.Passphrase:     wallet_create.NewPassphrase,
+		page.ListWallets:    wallet_list.New,
+		page.SwitchWallet:   wallet_switch.New,
+		page.UnlockWallet:   wallet_unlock.New,
+		page.Receive:        receive.New,
 	}
-	startPage := config.UnlockWalletPage
+	startPage := page.UnlockWallet
 
 	count, err := ctx.WalletRepo.WalletCount()
 	if err == nil && count == 0 {
-		startPage = config.CreateWalletPage
+		startPage = page.CreateWallet
 	}
 
 	app := frame.NewApp(ctx, pages, startPage)

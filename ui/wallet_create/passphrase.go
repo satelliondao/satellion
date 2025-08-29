@@ -3,8 +3,8 @@ package wallet_create
 import (
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/satelliondao/satellion/config"
 	"github.com/satelliondao/satellion/ui/frame"
+	"github.com/satelliondao/satellion/ui/frame/page"
 )
 
 type passphraseState struct {
@@ -49,7 +49,7 @@ func (m passphraseState) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					}
 					m.ctx.TempWalletName = ""
 					m.ctx.TempMnemonic = nil
-					return m, frame.Navigate(config.HomePage)
+					return m, frame.Navigate(page.Home)
 				}
 				m.confirm = textinput.New()
 				m.confirm.Placeholder = "Confirm passphrase"
@@ -71,7 +71,7 @@ func (m passphraseState) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 			m.ctx.TempWalletName = ""
 			m.ctx.TempMnemonic = nil
-			return m, frame.Navigate(config.HomePage)
+			return m, frame.Navigate(page.Home)
 		}
 	}
 	if m.confirming {

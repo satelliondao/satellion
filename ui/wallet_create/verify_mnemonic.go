@@ -9,9 +9,9 @@ import (
 
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/satelliondao/satellion/config"
 	"github.com/satelliondao/satellion/mnemonic"
 	"github.com/satelliondao/satellion/ui/frame"
+	"github.com/satelliondao/satellion/ui/frame/page"
 )
 
 const wordCount = 3
@@ -78,7 +78,7 @@ func (m verifyState) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			// 	m.err = "Words do not match. Try again."
 			// 	return m, nil
 			// }
-			return m, frame.Navigate(config.PassphrasePage)
+			return m, frame.Navigate(page.Passphrase)
 		}
 	}
 	if len(m.inputs) > 0 {

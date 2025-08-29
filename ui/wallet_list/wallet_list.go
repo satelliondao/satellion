@@ -4,9 +4,9 @@ import (
 	"fmt"
 
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/satelliondao/satellion/config"
 	"github.com/satelliondao/satellion/stdout"
 	"github.com/satelliondao/satellion/ui/frame"
+	"github.com/satelliondao/satellion/ui/frame/page"
 	"github.com/satelliondao/satellion/wallet"
 )
 
@@ -38,7 +38,7 @@ func (m *state) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, tea.Quit
 		}
 		if v.String() == "enter" {
-			return m, frame.Navigate(config.HomePage)
+			return m, frame.Navigate(page.Home)
 		}
 	}
 	return m, nil

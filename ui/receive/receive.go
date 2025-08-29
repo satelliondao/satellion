@@ -6,9 +6,9 @@ import (
 
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/fatih/color"
-	"github.com/satelliondao/satellion/config"
 	"github.com/satelliondao/satellion/stdout"
 	"github.com/satelliondao/satellion/ui/frame"
+	"github.com/satelliondao/satellion/ui/frame/page"
 	"github.com/satelliondao/satellion/wallet"
 )
 
@@ -55,7 +55,7 @@ func (s *state) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return s, tea.Quit
 		}
 		if v.Type == tea.KeyEsc {
-			return s, frame.Navigate(config.HomePage)
+			return s, frame.Navigate(page.Home)
 		}
 		if strings.ToLower(v.String()) == "r" {
 			return s, s.regenerateAddress()

@@ -6,9 +6,9 @@ import (
 
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/fatih/color"
-	"github.com/satelliondao/satellion/config"
 	"github.com/satelliondao/satellion/stdout"
 	"github.com/satelliondao/satellion/ui/frame"
+	"github.com/satelliondao/satellion/ui/frame/page"
 )
 
 type head struct {
@@ -45,10 +45,10 @@ func (s *state) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch v := msg.(type) {
 	case tea.KeyMsg:
 		if stdout.ShouldQuit(v) {
-			return s, frame.Navigate(config.HomePage)
+			return s, frame.Navigate(page.Home)
 		}
 		if v.Type == tea.KeyEsc {
-			return s, frame.Navigate(config.HomePage)
+			return s, frame.Navigate(page.Home)
 		}
 	case tickMsg:
 		stamp, peers, err := s.ctx.Router.BestBlock()
