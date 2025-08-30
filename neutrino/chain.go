@@ -1,4 +1,4 @@
-package chain
+package neutrino
 
 import (
 	"fmt"
@@ -106,6 +106,10 @@ func (c *Chain) Sync() error {
 			return nil
 		}
 	}
+}
+
+func (c *Chain) IsSynced() bool {
+	return c.chainService.IsCurrent()
 }
 
 func (c *Chain) Stop() error {

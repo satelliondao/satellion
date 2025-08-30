@@ -8,16 +8,16 @@ import (
 	"path/filepath"
 
 	"github.com/lightninglabs/neutrino/headerfs"
-	"github.com/satelliondao/satellion/chain"
 	"github.com/satelliondao/satellion/config"
 	"github.com/satelliondao/satellion/mnemonic"
+	"github.com/satelliondao/satellion/neutrino"
 	"github.com/satelliondao/satellion/wallet"
 	"github.com/satelliondao/satellion/walletdb"
 )
 
 type Router struct {
 	WalletRepo *walletdb.WalletDB
-	Chain      *chain.Chain
+	Chain      *neutrino.Chain
 	Config     *config.Config
 }
 
@@ -53,7 +53,7 @@ func (r *Router) StartChain() error {
 		}
 		r.Config = loaded
 	}
-	r.Chain = chain.NewChain(r.Config)
+	r.Chain = neutrino.NewChain(r.Config)
 	return r.Chain.Start()
 }
 
@@ -106,9 +106,9 @@ func (r *Router) Unlock(passphrase string) error {
 		return fmt.Errorf("no active wallet")
 	}
 	hashSeed := sha256.Sum256(w.Mnemonic.Seed(passphrase))
-	currentLock := hex.EncodeToString(hashSeed[:])
+	unlockKey := hex.EncodeToString(hashSeed[:])
 
-	if w.Lock != currentLock {
+	if w.Lock != unlockKey {
 		return fmt.Errorf("invalid passphrase")
 	}
 	return nil

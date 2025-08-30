@@ -14,6 +14,8 @@ import (
 
 const ActiveWalletKey = "active_wallet"
 
+var ErrWalletNotFound = errors.New("wallet not found")
+
 type WalletDB struct {
 	db walletdb.DB
 }
@@ -51,16 +53,15 @@ func (s *WalletDB) Save(w *wallet.Wallet) error {
 
 func (s *WalletDB) Get(wname string, passphrase string) (*wallet.Wallet, error) {
 	var entity WalletEntity
-	e := errors.New("wallet not found")
 	err := s.db.View(func(tx bdb.ReadTx) error {
 		key := s.getKey(wname)
 		bucket := tx.ReadBucket(key)
 		if bucket == nil {
-			return e
+			return ErrWalletNotFound
 		}
 		raw := bucket.Get(key)
 		if len(raw) == 0 {
-			return e
+			return ErrWalletNotFound
 		}
 		return json.Unmarshal(raw, &entity)
 	}, func() {})
@@ -140,7 +141,6 @@ func (s *WalletDB) SetDefault(wname string) error {
 
 func (s *WalletDB) GetActiveWallet(passphrase string) (*wallet.Wallet, error) {
 	walletName, err := s.GetActiveWalletName()
-	e := errors.New("default wallet not set")
 	if err != nil {
 		return nil, err
 	}
@@ -150,11 +150,11 @@ func (s *WalletDB) GetActiveWallet(passphrase string) (*wallet.Wallet, error) {
 	err = s.db.View(func(tx bdb.ReadTx) error {
 		bucket := tx.ReadBucket(key)
 		if bucket == nil {
-			return e
+			return ErrWalletNotFound
 		}
 		raw := bucket.Get(key)
 		if len(raw) == 0 {
-			return e
+			return ErrWalletNotFound
 		}
 		return json.Unmarshal(raw, &entity)
 	}, func() {})
@@ -166,20 +166,20 @@ func (s *WalletDB) GetActiveWallet(passphrase string) (*wallet.Wallet, error) {
 
 func (s *WalletDB) GetActiveWalletName() (string, error) {
 	var walletName string
-	e := errors.New("default wallet not set")
 
 	err := s.db.View(func(tx bdb.ReadTx) error {
 		idx := tx.ReadBucket(walletStoreKey)
 		if idx == nil {
-			return e
+			return ErrWalletNotFound
 		}
 		raw := idx.Get([]byte(ActiveWalletKey))
 		if len(raw) == 0 {
-			return e
+			return ErrWalletNotFound
 		}
 		walletName = string(raw)
 		return nil
 	}, func() {})
+
 	if err != nil {
 		return "", err
 	}

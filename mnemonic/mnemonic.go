@@ -8,7 +8,7 @@ import (
 
 	"golang.org/x/crypto/pbkdf2"
 
-	mnemonic "github.com/satelliondao/satellion/mnemonic/wordlist"
+	"github.com/satelliondao/satellion/mnemonic/wordlist"
 )
 
 const wordCount = 12
@@ -26,18 +26,17 @@ func New(words []string) Mnemonic {
 
 func NewRandom() *Mnemonic {
 	out := make([]string, wordCount)
-	if wordlistCount != len(mnemonic.EnWordList) {
+	if wordlistCount != len(wordlist.EnWordList) {
 		panic("wordlist count mismatch")
 	}
 	max := big.NewInt(wordlistCount)
-	for i := 0; i < wordCount; i++ {
+	for i := range wordCount {
 		n, err := rand.Int(rand.Reader, max)
 		if err != nil {
 			panic("failed to generate random index")
 		}
-		out[i] = mnemonic.EnWordList[n.Int64()]
+		out[i] = wordlist.EnWordList[n.Int64()]
 	}
-
 	return &Mnemonic{
 		Words: out,
 	}

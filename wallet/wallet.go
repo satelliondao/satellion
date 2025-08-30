@@ -21,7 +21,6 @@ type Wallet struct {
 	NextReceiveIndex uint32
 	Name             string
 	IsDefault        bool
-	Passphrase       string
 	Lock             string
 }
 
@@ -44,7 +43,6 @@ func New(
 		NextReceiveIndex: nextReceiveIndex,
 		Name:             name,
 		Mnemonic:         mnemonic,
-		Passphrase:       passphrase,
 		Lock:             lock,
 	}
 	if lock == "" {
