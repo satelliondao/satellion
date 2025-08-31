@@ -5,7 +5,9 @@ import (
 	"log"
 	"time"
 
+	"github.com/btcsuite/btcd/btcutil/gcs"
 	"github.com/btcsuite/btcd/btcutil/gcs/builder"
+	"github.com/btcsuite/btcd/chaincfg/chainhash"
 	"github.com/btcsuite/btcd/txscript"
 	"github.com/satelliondao/satellion/ports"
 	"github.com/satelliondao/satellion/wallet"
@@ -29,7 +31,7 @@ func (bs *BalanceService) SetProgressCallback(callback func(current, total int64
 	bs.onProgress = callback
 }
 
-func (bs *BalanceService) ScanWalletBalanceInfo(wallet *wallet.Wallet) (*BalanceInfo, error) {
+func (bs *BalanceService) ScanLedger(wallet *wallet.Wallet) (*BalanceInfo, error) {
 	if wallet.CreatedAt.IsZero() {
 		return nil, fmt.Errorf("wallet creation time not set")
 	}
@@ -42,29 +44,24 @@ func (bs *BalanceService) ScanWalletBalanceInfo(wallet *wallet.Wallet) (*Balance
 		return nil, fmt.Errorf("failed to find start height: %w", err)
 	}
 	blockCount := int64(bestBlock.Height) - startHeight + 1
-
-	const maxBlocksToScan = 50000
-	if blockCount > maxBlocksToScan {
-		log.Printf("Too many blocks to scan (%d), limiting to last %d blocks", blockCount, maxBlocksToScan)
-		startHeight = int64(bestBlock.Height) - maxBlocksToScan + 1
-		blockCount = maxBlocksToScan
-	}
 	addresses, err := bs.generateAllAddresses(wallet)
 	if err != nil {
 		return nil, fmt.Errorf("failed to generate addresses: %w", err)
 	}
-
 	scripts, err := bs.addressesToScripts(addresses)
 	if err != nil {
 		return nil, fmt.Errorf("failed to convert addresses to scripts: %w", err)
 	}
-
 	var totalBalance uint64
 	var totalUtxos uint64
 	processed := int64(0)
-
 	for height := startHeight; height <= int64(bestBlock.Height); height++ {
-		matches, err := bs.scanBlockForAddresses(height, scripts)
+		blockHash, err := bs.chain.GetBlockHash(height)
+		if err != nil {
+			log.Printf("Warning: failed to get block hash for height %d: %v", height, err)
+			continue
+		}
+		matches, err := bs.scanBlockForAddresses(blockHash, scripts)
 		if err != nil {
 			log.Printf("Warning: failed to scan block %d: %v", height, err)
 			continue
@@ -147,21 +144,21 @@ func (bs *BalanceService) addressesToScripts(addresses []*wallet.Address) ([][]b
 	return scripts, nil
 }
 
-func (bs *BalanceService) scanBlockForAddresses(height int64, scripts [][]byte) (int, error) {
-	blockHash, err := bs.chain.GetBlockHash(height)
-	if err != nil {
-		return 0, fmt.Errorf("failed to get block hash: %w", err)
-	}
+func (bs *BalanceService) scanBlockForAddresses(blockHash *chainhash.Hash, scripts [][]byte) (int, error) {
 	filter, err := bs.chain.GetCFilter(*blockHash)
 	if err != nil {
 		return 0, fmt.Errorf("failed to get compact filter: %w", err)
 	}
+	return bs.matchScriptsAgainstFilter(filter, blockHash, scripts)
+}
+
+func (bs *BalanceService) matchScriptsAgainstFilter(filter *gcs.Filter, blockHash *chainhash.Hash, scripts [][]byte) (int, error) {
 	key := builder.DeriveKey(blockHash)
 	matches := 0
 	for _, script := range scripts {
 		match, err := filter.Match(key, script)
 		if err != nil {
-			return 0, fmt.Errorf("failed to match filter: %w", err)
+			return 0, fmt.Errorf("failed to execute match on compact filter: %w", err)
 		}
 		if match {
 			matches++

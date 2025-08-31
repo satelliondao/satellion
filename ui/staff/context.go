@@ -1,4 +1,4 @@
-package frame
+package staff
 
 import (
 	"github.com/satelliondao/satellion/mnemonic"

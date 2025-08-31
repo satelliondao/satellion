@@ -1,22 +1,22 @@
-package wallet_create
+package passphrase
 
 import (
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/satelliondao/satellion/ui/frame"
-	"github.com/satelliondao/satellion/ui/frame/page"
+	"github.com/satelliondao/satellion/ui/page"
+	"github.com/satelliondao/satellion/ui/staff"
 )
 
-type passphraseState struct {
-	ctx        *frame.AppContext
+type State struct {
+	ctx        *staff.AppContext
 	passInput  textinput.Model
 	confirm    textinput.Model
 	err        string
 	confirming bool
 }
 
-func NewPassphrase(ctx *frame.AppContext) frame.Page {
-	m := passphraseState{ctx: ctx}
+func New(ctx *staff.AppContext) staff.Page {
+	m := State{ctx: ctx}
 	in := textinput.New()
 	in.Focus()
 	in.EchoMode = textinput.EchoPassword
@@ -27,12 +27,12 @@ func NewPassphrase(ctx *frame.AppContext) frame.Page {
 	return m
 }
 
-func (m passphraseState) Init() tea.Cmd {
+func (m State) Init() tea.Cmd {
 	m.passInput.Focus()
 	return textinput.Blink
 }
 
-func (m passphraseState) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+func (m State) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var cmd tea.Cmd
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
@@ -49,7 +49,7 @@ func (m passphraseState) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					}
 					m.ctx.TempWalletName = ""
 					m.ctx.TempMnemonic = nil
-					return m, frame.Navigate(page.Home)
+					return m, staff.Navigate(page.Home)
 				}
 				m.confirm = textinput.New()
 				m.confirm.Placeholder = "Confirm passphrase"
@@ -71,7 +71,7 @@ func (m passphraseState) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 			m.ctx.TempWalletName = ""
 			m.ctx.TempMnemonic = nil
-			return m, frame.Navigate(page.Home)
+			return m, staff.Navigate(page.Home)
 		}
 	}
 	if m.confirming {
@@ -82,8 +82,8 @@ func (m passphraseState) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return m, cmd
 }
 
-func (m passphraseState) View() string {
-	v := frame.NewViewBuilder()
+func (m State) View() string {
+	v := staff.NewViewBuilder()
 	if !m.confirming {
 		v.Line("Set an optional passphrase. Leave empty if none.")
 		v.Line(m.passInput.View())

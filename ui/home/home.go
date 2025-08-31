@@ -6,14 +6,14 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/fatih/color"
 	"github.com/satelliondao/satellion/stdout"
-	"github.com/satelliondao/satellion/ui/frame"
-	"github.com/satelliondao/satellion/ui/frame/page"
+	"github.com/satelliondao/satellion/ui/page"
+	"github.com/satelliondao/satellion/ui/staff"
 	"github.com/satelliondao/satellion/wallet"
 )
 
 type state struct {
-	ctx      *frame.AppContext
-	selector *frame.ChoiceSelector
+	ctx      *staff.AppContext
+	selector *staff.ChoiceSelector
 	w        *wallet.Wallet
 	items    []menuItem
 }
@@ -29,7 +29,7 @@ var baseMenuItems = []menuItem{
 	{label: "Send", page: page.Send},
 }
 
-func New(ctx *frame.AppContext) frame.Page {
+func New(ctx *staff.AppContext) staff.Page {
 	m := &state{ctx: ctx}
 	m.rebuildMenu()
 	return m
@@ -40,13 +40,13 @@ func (m *state) rebuildMenu() {
 	items = append(items, baseMenuItems...)
 	m.items = items
 
-	choices := make([]frame.Choice, len(items))
+	choices := make([]staff.Choice, len(items))
 	for i, item := range items {
-		choices[i] = frame.Choice{Label: item.label, Value: item.page}
+		choices[i] = staff.Choice{Label: item.label, Value: item.page}
 	}
 
 	if m.selector == nil {
-		m.selector = frame.NewChoiceSelector(choices)
+		m.selector = staff.NewChoiceSelector(choices)
 	} else {
 		m.selector.SetChoices(choices)
 	}
@@ -64,8 +64,8 @@ func (m *state) Init() tea.Cmd {
 func (m *state) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	result := m.selector.Update(msg)
 	// Handle selection results
-	if result.Action == frame.ActionSelection && result.Selected != nil {
-		return m, frame.Navigate(result.Selected.Value.(string))
+	if result.Action == staff.ActionSelection && result.Selected != nil {
+		return m, staff.Navigate(result.Selected.Value.(string))
 	}
 	// Handle other key messages if not consumed by selector
 	if !result.Consumed {
@@ -81,7 +81,7 @@ func (m *state) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (m *state) View() string {
-	v := frame.NewViewBuilder()
+	v := staff.NewViewBuilder()
 	if m.w != nil {
 		v.Line(fmt.Sprintf("Wallet %s\n", color.New(color.Bold).Sprintf("%s", m.w.Name)))
 	}

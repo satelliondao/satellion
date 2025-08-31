@@ -1,4 +1,4 @@
-package frame
+package staff
 
 import (
 	"fmt"
@@ -58,7 +58,7 @@ func (b *ViewBuilder) Build() string {
 		v += color.New(color.FgHiRed).Sprintf("\n%s", b.errText)
 	}
 	if b.helpText != "" {
-		v += color.New(color.FgHiYellow).Sprintf("\n%s", b.helpText)
+		v += color.New(color.FgHiBlack).Sprintf("\n%s", b.helpText)
 	}
 	return v
 }

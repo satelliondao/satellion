@@ -6,18 +6,18 @@ import (
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/fatih/color"
-	"github.com/satelliondao/satellion/ui/frame"
-	"github.com/satelliondao/satellion/ui/frame/page"
+	"github.com/satelliondao/satellion/ui/page"
+	"github.com/satelliondao/satellion/ui/staff"
 )
 
 type state struct {
-	ctx      *frame.AppContext
+	ctx      *staff.AppContext
 	input    textinput.Model
-	selector *frame.ChoiceSelector
+	selector *staff.ChoiceSelector
 	err      string
 }
 
-func New(ctx *frame.AppContext) frame.Page {
+func New(ctx *staff.AppContext) staff.Page {
 	i := textinput.New()
 	i.Placeholder = "Enter your passphrase"
 	i.Focus()
@@ -26,7 +26,7 @@ func New(ctx *frame.AppContext) frame.Page {
 	i.EchoMode = textinput.EchoPassword
 	i.EchoCharacter = '•'
 
-	choices := []frame.Choice{
+	choices := []staff.Choice{
 		{Label: "Unlock", Value: "unlock"},
 		{Label: "Switch wallet", Value: "switch"},
 		{Label: "Create new wallet", Value: "create"},
@@ -35,7 +35,7 @@ func New(ctx *frame.AppContext) frame.Page {
 	return &state{
 		ctx:      ctx,
 		input:    i,
-		selector: frame.NewChoiceSelector(choices),
+		selector: staff.NewChoiceSelector(choices),
 	}
 }
 
@@ -55,7 +55,7 @@ func (m *state) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 		// Handle special shortcuts
 		if v.Type == tea.KeyCtrlS && v.String() == "ctrl+s" {
-			return m, frame.Navigate(page.SwitchWallet)
+			return m, staff.Navigate(page.SwitchWallet)
 		}
 
 		// Check if this is a navigation key that should be handled by choice selector
@@ -63,7 +63,7 @@ func (m *state) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			choiceResult := m.selector.Update(msg)
 			if choiceResult.Consumed {
 				// Handle choice selection
-				if choiceResult.Action == frame.ActionSelection && choiceResult.Selected != nil {
+				if choiceResult.Action == staff.ActionSelection && choiceResult.Selected != nil {
 					switch choiceResult.Selected.Value {
 					case "unlock":
 						pass := m.input.Value()
@@ -73,13 +73,13 @@ func (m *state) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 							return m, nil
 						}
 						m.ctx.TempPassphrase = pass
-						return m, frame.Navigate(page.Home)
+						return m, staff.Navigate(page.Home)
 					case "switch":
 						m.ctx.TempPassphrase = ""
 						m.input.SetValue("")
-						return m, frame.Navigate(page.SwitchWallet)
+						return m, staff.Navigate(page.SwitchWallet)
 					case "create":
-						return m, frame.Navigate(page.CreateWallet)
+						return m, staff.Navigate(page.CreateWallet)
 					}
 				}
 				return m, nil
@@ -94,7 +94,7 @@ func (m *state) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (m *state) View() string {
-	v := frame.NewViewBuilder()
+	v := staff.NewViewBuilder()
 	name, err := m.ctx.WalletRepo.GetActiveWalletName()
 	if err != nil {
 		v.Line("No active wallet found\n")

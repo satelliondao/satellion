@@ -8,31 +8,32 @@ import (
 	"github.com/fatih/color"
 	"github.com/satelliondao/satellion/neutrino"
 	"github.com/satelliondao/satellion/stdout"
-	"github.com/satelliondao/satellion/ui/frame"
-	"github.com/satelliondao/satellion/ui/frame/page"
+	"github.com/satelliondao/satellion/ui/balance"
+	"github.com/satelliondao/satellion/ui/page"
+	"github.com/satelliondao/satellion/ui/staff"
 )
 
 type tickMsg time.Time
 
 type state struct {
-	ctx        *frame.AppContext
+	ctx        *staff.AppContext
 	height     int
 	timestamp  time.Time
 	peers      int
 	isComplete bool
-	balance    *balanceState
+	balance    *balance.State
 }
 
-func New(ctx *frame.AppContext) frame.Page {
+func New(ctx *staff.AppContext) staff.Page {
 	s := &state{ctx: ctx}
-	s.balance = NewBalanceComponent(ctx)
+	s.balance = balance.New(ctx)
 	s.balance.SetOnComplete(s.onBalanceComplete)
 	return s
 }
 
 func (s *state) Init() tea.Cmd {
 	if err := s.ctx.Router.StartChain(); err != nil {
-		return nil
+		panic(err)
 	}
 	return s.tick()
 }
@@ -44,7 +45,7 @@ func (s *state) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.KeyMsg:
 		if stdout.ShouldQuit(v) || v.Type == tea.KeyEsc {
 			_ = s.ctx.Router.StopChain()
-			return s, frame.Navigate(page.Home)
+			return s, staff.Navigate(page.Home)
 		}
 		if s.isComplete && v.String() == "r" {
 			return s, s.balance.StartScan()
@@ -88,7 +89,7 @@ func (s *state) tick() tea.Cmd {
 }
 
 func (s *state) View() string {
-	v := frame.NewViewBuilder()
+	v := staff.NewViewBuilder()
 	if s.isComplete {
 		v.Line(s.renderComplete())
 		v.Line("")

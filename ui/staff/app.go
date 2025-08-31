@@ -1,4 +1,4 @@
-package frame
+package staff
 
 import (
 	tea "github.com/charmbracelet/bubbletea"

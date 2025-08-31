@@ -1,4 +1,4 @@
-package wallet_create
+package verify_mnemonic
 
 import (
 	"fmt"
@@ -10,14 +10,14 @@ import (
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/satelliondao/satellion/mnemonic"
-	"github.com/satelliondao/satellion/ui/frame"
-	"github.com/satelliondao/satellion/ui/frame/page"
+	"github.com/satelliondao/satellion/ui/page"
+	"github.com/satelliondao/satellion/ui/staff"
 )
 
 const wordCount = 3
 
-type verifyState struct {
-	ctx      *frame.AppContext
+type State struct {
+	ctx      *staff.AppContext
 	mnemonic *mnemonic.Mnemonic
 	inputs   []textinput.Model
 	focus    int
@@ -25,8 +25,8 @@ type verifyState struct {
 	err      string
 }
 
-func NewVerify(ctx *frame.AppContext) frame.Page {
-	m := verifyState{ctx: ctx}
+func New(ctx *staff.AppContext) staff.Page {
+	m := State{ctx: ctx}
 	if ctx != nil {
 		m.mnemonic = ctx.TempMnemonic
 	}
@@ -49,11 +49,11 @@ func NewVerify(ctx *frame.AppContext) frame.Page {
 	return m
 }
 
-func (m verifyState) Init() tea.Cmd {
+func (m State) Init() tea.Cmd {
 	return textinput.Blink
 }
 
-func (m verifyState) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+func (m State) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var cmd tea.Cmd
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
@@ -74,11 +74,7 @@ func (m verifyState) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.inputs[m.focus].Focus()
 				return m, nil
 			}
-			// if !m.isMnemonicValid() {
-			// 	m.err = "Words do not match. Try again."
-			// 	return m, nil
-			// }
-			return m, frame.Navigate(page.Passphrase)
+			return m, staff.Navigate(page.Passphrase)
 		}
 	}
 	if len(m.inputs) > 0 {
@@ -90,21 +86,8 @@ func (m verifyState) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return m, cmd
 }
 
-func (m verifyState) isMnemonicValid() bool {
-	valid := true
-	for i := 0; i < wordCount; i++ {
-		want := strings.ToLower(m.mnemonic.Words[m.indices[i]])
-		got := strings.ToLower(strings.TrimSpace(m.inputs[i].Value()))
-		if got != want {
-			valid = false
-			break
-		}
-	}
-	return valid
-}
-
-func (m verifyState) View() string {
-	v := frame.NewViewBuilder()
+func (m State) View() string {
+	v := staff.NewViewBuilder()
 	if m.mnemonic == nil {
 		return "Verify your mnemonic\n\nMnemonic not found. Press Esc to go back."
 	}

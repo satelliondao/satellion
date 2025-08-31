@@ -7,13 +7,13 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/fatih/color"
 	"github.com/satelliondao/satellion/stdout"
-	"github.com/satelliondao/satellion/ui/frame"
-	"github.com/satelliondao/satellion/ui/frame/page"
+	"github.com/satelliondao/satellion/ui/page"
+	"github.com/satelliondao/satellion/ui/staff"
 	"github.com/satelliondao/satellion/wallet"
 )
 
 type state struct {
-	ctx     *frame.AppContext
+	ctx     *staff.AppContext
 	err     string
 	address *wallet.Address
 	wallet  *wallet.Wallet
@@ -23,7 +23,7 @@ type errorMsg struct {
 	err string
 }
 
-func New(ctx *frame.AppContext) frame.Page {
+func New(ctx *staff.AppContext) staff.Page {
 	return &state{
 		ctx: ctx,
 	}
@@ -55,7 +55,7 @@ func (s *state) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return s, tea.Quit
 		}
 		if v.Type == tea.KeyEsc {
-			return s, frame.Navigate(page.Home)
+			return s, staff.Navigate(page.Home)
 		}
 		if strings.ToLower(v.String()) == "r" {
 			return s, s.regenerateAddress()
@@ -81,7 +81,7 @@ func (s *state) regenerateAddress() tea.Cmd {
 }
 
 func (s *state) View() string {
-	v := frame.NewViewBuilder()
+	v := staff.NewViewBuilder()
 	v.Line(color.New(color.FgGreen).Sprintf("Address: %s", s.address.Address))
 	v.Line(color.New(color.FgCyan).Sprintf("Derivation Path: %d", s.address.DeriviationIndex))
 	v.Line("")

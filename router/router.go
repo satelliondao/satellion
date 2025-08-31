@@ -139,5 +139,5 @@ func (r *Router) GetWalletBalanceInfo(passphrase string) (*neutrino.BalanceInfo,
 		return nil, fmt.Errorf("no active wallet")
 	}
 	balanceService := neutrino.NewBalanceService(r.Chain)
-	return balanceService.ScanWalletBalanceInfo(w)
+	return balanceService.ScanLedger(w)
 }
