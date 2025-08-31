@@ -7,9 +7,14 @@ import (
 	"github.com/lightninglabs/neutrino/headerfs"
 )
 
-// ChainService defines the interface for blockchain operations
-type ChainService interface {
-	BestBlock() (*headerfs.BlockStamp, error)
+type BlockInfo struct {
+	*headerfs.BlockStamp
+	Peers int
+}
+
+// Chain defines the interface for blockchain operations
+type Chain interface {
+	BestBlock() (*BlockInfo, error)
 	GetBlockHash(height int64) (*chainhash.Hash, error)
 	GetBlockHeader(hash *chainhash.Hash) (*wire.BlockHeader, error)
 	GetCFilter(hash chainhash.Hash) (*gcs.Filter, error)

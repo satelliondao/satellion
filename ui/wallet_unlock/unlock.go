@@ -7,6 +7,7 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/fatih/color"
 	"github.com/satelliondao/satellion/ui/framework"
+	"github.com/satelliondao/satellion/ui/passphrase"
 	"github.com/satelliondao/satellion/ui/router"
 )
 
@@ -17,24 +18,16 @@ type state struct {
 	err      string
 }
 
+var choices = []framework.Choice{
+	{Label: "Unlock", Value: "unlock"},
+	{Label: "Switch wallet", Value: "switch"},
+	{Label: "Create new wallet", Value: "create"},
+}
+
 func New(ctx *framework.AppContext, params interface{}) framework.Page {
-	i := textinput.New()
-	i.Placeholder = "Enter your passphrase"
-	i.Focus()
-	i.CharLimit = 128
-	i.Width = 40
-	i.EchoMode = textinput.EchoPassword
-	i.EchoCharacter = '•'
-
-	choices := []framework.Choice{
-		{Label: "Unlock", Value: "unlock"},
-		{Label: "Switch wallet", Value: "switch"},
-		{Label: "Create new wallet", Value: "create"},
-	}
-
 	return &state{
 		ctx:      ctx,
-		input:    i,
+		input:    passphrase.PassphraseInput("Enter your passphrase"),
 		selector: framework.NewChoiceSelector(choices),
 	}
 }

@@ -7,7 +7,6 @@ import (
 	"github.com/btcsuite/btcd/btcutil/gcs/builder"
 	"github.com/btcsuite/btcd/chaincfg"
 	"github.com/btcsuite/btcd/txscript"
-	"github.com/btcsuite/btcd/wire"
 	"github.com/satelliondao/satellion/config"
 	"github.com/stretchr/testify/assert"
 )
@@ -21,17 +20,20 @@ func TestGetCompactFilter(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	cnains := NewChainService(cfg)
-	err = cnains.Start()
+	chain, err := NewChain(cfg)
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer cnains.Stop()
-	blockhash, err := cnains.GetBlockHash(TestBlockHeight)
+	err = chain.Syncronize()
 	if err != nil {
 		t.Fatal(err)
 	}
-	filter, err := cnains.neutrino.GetCFilter(*blockhash, wire.GCSFilterRegular)
+	defer chain.Stop()
+	blockhash, err := chain.GetBlockHash(TestBlockHeight)
+	if err != nil {
+		t.Fatal(err)
+	}
+	filter, err := chain.GetCFilter(*blockhash)
 	if err != nil {
 		t.Fatal(err)
 	}

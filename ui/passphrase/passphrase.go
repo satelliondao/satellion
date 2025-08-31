@@ -24,17 +24,19 @@ func New(ctx *framework.AppContext, p interface{}) framework.Page {
 		m.walletName = props.WalletName
 		m.mnemonic = props.Mnemonic
 	}
-	m.passInput = passwordInput()
+	m.passInput = PassphraseInput("Enter a passphrase (optional)")
+	m.confirm = PassphraseInput("Confirm passphrase")
 	return m
 }
 
-func passwordInput() textinput.Model {
+func PassphraseInput(placeholder string) textinput.Model {
 	in := textinput.New()
-	in.Focus()
+	in.Placeholder = placeholder
 	in.EchoMode = textinput.EchoPassword
 	in.EchoCharacter = '•'
 	in.CharLimit = 128
 	in.Width = 24
+	in.Focus()
 	return in
 }
 
@@ -52,32 +54,20 @@ func (m State) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, tea.Quit
 		case tea.KeyEnter:
 			if !m.confirming {
-				return m.handleInitialInput()
+				m.confirming = true
+				return m, nil
 			}
 			return m.handleConfirmInput()
 		}
 	}
+
 	if m.confirming {
 		m.confirm, cmd = m.confirm.Update(msg)
-		return m, cmd
+	} else {
+		m.passInput, cmd = m.passInput.Update(msg)
 	}
-	m.passInput, cmd = m.passInput.Update(msg)
-	return m, cmd
-}
 
-func (m State) handleInitialInput() (tea.Model, tea.Cmd) {
-	p := m.passInput.Value()
-	if p == "" {
-		if err := m.ctx.WalletService.AddWallet(m.walletName, *m.mnemonic, ""); err != nil {
-			m.err = err.Error()
-			return m, nil
-		}
-		m.ctx.Passphrase = ""
-		return m, router.Home()
-	}
-	m.confirm = m.getPassphraseInput()
-	m.confirming = true
-	return m, nil
+	return m, cmd
 }
 
 func (m State) handleConfirmInput() (tea.Model, tea.Cmd) {
@@ -91,17 +81,6 @@ func (m State) handleConfirmInput() (tea.Model, tea.Cmd) {
 	}
 	m.ctx.Passphrase = m.passInput.Value()
 	return m, router.Home()
-}
-
-func (m State) getPassphraseInput() textinput.Model {
-	i := textinput.New()
-	i.Placeholder = "Confirm passphrase"
-	i.EchoMode = textinput.EchoPassword
-	i.EchoCharacter = '•'
-	i.CharLimit = 128
-	i.Width = 24
-	i.Focus()
-	return i
 }
 
 func (m State) View() string {

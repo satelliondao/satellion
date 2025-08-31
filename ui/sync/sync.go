@@ -17,7 +17,7 @@ type tickMsg time.Time
 
 type state struct {
 	ctx        *framework.AppContext
-	height     int
+	height     int32
 	timestamp  time.Time
 	peers      int
 	isComplete bool
@@ -32,9 +32,11 @@ func New(ctx *framework.AppContext, params interface{}) framework.Page {
 }
 
 func (s *state) Init() tea.Cmd {
-	if err := s.ctx.ChainService.Start(); err != nil {
-		panic(err)
-	}
+	go (func() {
+		if err := s.ctx.ChainService.Syncronize(); err != nil {
+			panic(err)
+		}
+	})()
 	return s.tick()
 }
 
@@ -44,7 +46,6 @@ func (s *state) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch v := msg.(type) {
 	case tea.KeyMsg:
 		if stdout.ShouldQuit(v) || v.Type == tea.KeyEsc {
-			_ = s.ctx.ChainService.Stop()
 			return s, router.Home()
 		}
 		if s.isComplete && v.String() == "r" {
@@ -59,13 +60,13 @@ func (s *state) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (s *state) handleTick() tea.Cmd {
-	stamp, peers, err := s.ctx.ChainService.BestBlock()
+	block, err := s.ctx.ChainService.BestBlock()
 	if err != nil {
 		return s.tick()
 	}
-	s.peers = peers
-	s.height = int(stamp.Height)
-	s.timestamp = stamp.Timestamp
+	s.peers = block.Peers
+	s.height = block.Height
+	s.timestamp = block.Timestamp
 	if s.isSynced() {
 		s.isComplete = true
 		return s.balance.StartScan()
@@ -100,5 +101,5 @@ func (s *state) View() string {
 	} else {
 		v.Line(color.New(color.FgYellow).Sprintf("⏳ Syncing..."))
 	}
-	return v.Build()
+	return v.WithQuitText().Build()
 }

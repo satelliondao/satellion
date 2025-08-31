@@ -13,37 +13,39 @@ import (
 	"github.com/satelliondao/satellion/wallet"
 )
 
+const MaxIndexFurtherLookup = 20
+
 type BalanceInfo struct {
 	Balance   uint64
 	UtxoCount uint64
 }
 
-type BalanceService struct {
-	chain      ports.ChainService
+type Balance struct {
+	chain      ports.Chain
 	onProgress func(current, total int64, percent float64)
 }
 
-func NewBalanceService(chain ports.ChainService) *BalanceService {
-	return &BalanceService{chain: chain}
+func NewBalance(chain ports.Chain) *Balance {
+	return &Balance{chain: chain}
 }
 
-func (bs *BalanceService) SetProgressCallback(callback func(current, total int64, percent float64)) {
+func (bs *Balance) SetProgressCallback(callback func(current, total int64, percent float64)) {
 	bs.onProgress = callback
 }
 
-func (bs *BalanceService) ScanLedger(wallet *wallet.Wallet) (*BalanceInfo, error) {
+func (bs *Balance) ScanLedger(wallet *wallet.Wallet) (*BalanceInfo, error) {
 	if wallet.CreatedAt.IsZero() {
 		return nil, fmt.Errorf("wallet creation time not set")
 	}
-	bestBlock, err := bs.chain.BestBlock()
+	block, err := bs.chain.BestBlock()
 	if err != nil {
 		return nil, fmt.Errorf("failed to get best block: %w", err)
 	}
-	startHeight, err := bs.findBlockHeightFromTime(wallet.CreatedAt, bestBlock.Height)
+	startHeight, err := bs.findBlockHeightFromTime(wallet.CreatedAt, block.Height)
 	if err != nil {
 		return nil, fmt.Errorf("failed to find start height: %w", err)
 	}
-	blockCount := int64(bestBlock.Height) - startHeight + 1
+	blockCount := int64(block.Height) - startHeight + 1
 	addresses, err := bs.generateAllAddresses(wallet)
 	if err != nil {
 		return nil, fmt.Errorf("failed to generate addresses: %w", err)
@@ -55,7 +57,7 @@ func (bs *BalanceService) ScanLedger(wallet *wallet.Wallet) (*BalanceInfo, error
 	var totalBalance uint64
 	var totalUtxos uint64
 	processed := int64(0)
-	for height := startHeight; height <= int64(bestBlock.Height); height++ {
+	for height := startHeight; height <= int64(block.Height); height++ {
 		blockHash, err := bs.chain.GetBlockHash(height)
 		if err != nil {
 			log.Printf("Warning: failed to get block hash for height %d: %v", height, err)
@@ -84,7 +86,7 @@ func (bs *BalanceService) ScanLedger(wallet *wallet.Wallet) (*BalanceInfo, error
 	}, nil
 }
 
-func (bs *BalanceService) findBlockHeightFromTime(createdAt time.Time, bestHeight int32) (int64, error) {
+func (bs *Balance) findBlockHeightFromTime(createdAt time.Time, bestHeight int32) (int64, error) {
 	var left, right int64 = 0, int64(bestHeight)
 	for left < right {
 		mid := (left + right) / 2
@@ -108,14 +110,14 @@ func (bs *BalanceService) findBlockHeightFromTime(createdAt time.Time, bestHeigh
 	return left, nil
 }
 
-func (bs *BalanceService) generateAllAddresses(w *wallet.Wallet) ([]*wallet.Address, error) {
+func (bs *Balance) generateAllAddresses(w *wallet.Wallet) ([]*wallet.Address, error) {
 	var addresses []*wallet.Address
 	maxIndex := w.NextReceiveIndex
 	if w.NextChangeIndex > maxIndex {
 		maxIndex = w.NextChangeIndex
 	}
 	if maxIndex == 0 {
-		maxIndex = 20
+		maxIndex = MaxIndexFurtherLookup
 	}
 	for i := uint32(0); i <= maxIndex; i++ {
 		receiveAddr, err := w.DeriveTaprootAddress(0, i)
@@ -132,7 +134,7 @@ func (bs *BalanceService) generateAllAddresses(w *wallet.Wallet) ([]*wallet.Addr
 	return addresses, nil
 }
 
-func (bs *BalanceService) addressesToScripts(addresses []*wallet.Address) ([][]byte, error) {
+func (bs *Balance) addressesToScripts(addresses []*wallet.Address) ([][]byte, error) {
 	var scripts [][]byte
 	for _, addr := range addresses {
 		script, err := txscript.PayToAddrScript(addr.Address)
@@ -144,7 +146,7 @@ func (bs *BalanceService) addressesToScripts(addresses []*wallet.Address) ([][]b
 	return scripts, nil
 }
 
-func (bs *BalanceService) scanBlockForAddresses(blockHash *chainhash.Hash, scripts [][]byte) (int, error) {
+func (bs *Balance) scanBlockForAddresses(blockHash *chainhash.Hash, scripts [][]byte) (int, error) {
 	filter, err := bs.chain.GetCFilter(*blockHash)
 	if err != nil {
 		return 0, fmt.Errorf("failed to get compact filter: %w", err)
@@ -152,7 +154,7 @@ func (bs *BalanceService) scanBlockForAddresses(blockHash *chainhash.Hash, scrip
 	return bs.matchScriptsAgainstFilter(filter, blockHash, scripts)
 }
 
-func (bs *BalanceService) matchScriptsAgainstFilter(filter *gcs.Filter, blockHash *chainhash.Hash, scripts [][]byte) (int, error) {
+func (bs *Balance) matchScriptsAgainstFilter(filter *gcs.Filter, blockHash *chainhash.Hash, scripts [][]byte) (int, error) {
 	key := builder.DeriveKey(blockHash)
 	matches := 0
 	for _, script := range scripts {

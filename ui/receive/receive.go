@@ -70,7 +70,6 @@ func (s *state) regenerateAddress() tea.Cmd {
 			return errorMsg{err: err.Error()}
 		}
 		s.address = addr
-
 		err = s.ctx.WalletRepo.Save(s.wallet)
 		if err != nil {
 			return errorMsg{err: err.Error()}
@@ -81,11 +80,12 @@ func (s *state) regenerateAddress() tea.Cmd {
 
 func (s *state) View() string {
 	v := framework.NewViewBuilder()
-	v.Line(color.New(color.FgGreen).Sprintf("Address: %s", s.address.Address))
-	v.Line(color.New(color.FgCyan).Sprintf("Derivation Path: %d", s.address.DeriviationIndex))
+	v.Line("Address:")
+	v.Line(color.New(color.FgGreen).Sprintf(s.address.Address.String()))
+	v.Line(fmt.Sprintf("Derivation Index: %d", s.address.DeriviationIndex))
 	v.Line("")
-	v.WithHelpText("R to generate new address")
 	v.WithErrText(s.err)
+	v.WithHelpText("R to generate new address")
 	v.WithQuitText()
 	return v.Build()
 }

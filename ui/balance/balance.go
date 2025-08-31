@@ -124,7 +124,8 @@ func (s *State) scanBalance() tea.Cmd {
 		if err != nil {
 			return balanceCompleteMsg{err: err}
 		}
-		info, err := s.ctx.ChainService.GetBalance(wallet)
+
+		info, err := neutrino.NewBalance(s.ctx.ChainService).ScanLedger(wallet)
 		if err != nil {
 			return balanceCompleteMsg{err: err}
 		}

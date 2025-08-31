@@ -4,7 +4,6 @@ import (
 	"github.com/btcsuite/btcd/btcutil/gcs"
 	"github.com/btcsuite/btcd/chaincfg/chainhash"
 	"github.com/btcsuite/btcd/wire"
-	"github.com/lightninglabs/neutrino/headerfs"
 	"github.com/satelliondao/satellion/ports"
 	"github.com/stretchr/testify/mock"
 )
@@ -14,11 +13,11 @@ type MockChainService struct {
 }
 
 // Compile-time check to ensure MockChainService implements ports.ChainService
-var _ ports.ChainService = (*MockChainService)(nil)
+var _ ports.Chain = (*MockChainService)(nil)
 
-func (m *MockChainService) BestBlock() (*headerfs.BlockStamp, error) {
+func (m *MockChainService) BestBlock() (*ports.BlockInfo, error) {
 	args := m.Called()
-	return args.Get(0).(*headerfs.BlockStamp), args.Error(1)
+	return args.Get(0).(*ports.BlockInfo), args.Error(1)
 }
 
 func (m *MockChainService) GetBlockHash(height int64) (*chainhash.Hash, error) {

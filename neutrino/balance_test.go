@@ -22,9 +22,9 @@ var words = []string{
 }
 var seed = mnemonic.New(words)
 
-func setupTest() (*MockChainService, *BalanceService) {
+func setupTest() (*MockChainService, *Balance) {
 	mockChain := &MockChainService{}
-	scanner := NewBalanceService(mockChain)
+	scanner := NewBalance(mockChain)
 	return mockChain, scanner
 }
 
@@ -121,7 +121,7 @@ func TestGenerateAllAddresses(t *testing.T) {
 func TestGenerateAllAddresses_ZeroIndices(t *testing.T) {
 	w := wallet.New(&seed, passphrase, "test")
 	chain := &MockChainService{}
-	scanner := NewBalanceService(chain)
+	scanner := NewBalance(chain)
 	addresses, err := scanner.generateAllAddresses(w)
 	assert.NoError(t, err)
 	expectedCount := 21 * 2 // Default 20 addresses + index 0, both receive and change
@@ -131,7 +131,7 @@ func TestGenerateAllAddresses_ZeroIndices(t *testing.T) {
 func TestAddressesToScripts(t *testing.T) {
 	w := wallet.New(&seed, passphrase, "test")
 	chain := &MockChainService{}
-	scanner := NewBalanceService(chain)
+	scanner := NewBalance(chain)
 	addresses, err := scanner.generateAllAddresses(w)
 	assert.NoError(t, err)
 	scripts, err := scanner.addressesToScripts(addresses)

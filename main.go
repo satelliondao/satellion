@@ -23,6 +23,7 @@ func main() {
 	if err != nil {
 		log.Fatalf("Failed to initialize app context: %v", err)
 	}
+	defer ctx.Cleanup()
 	pages := map[string]framework.PageFactory{
 		page.Home:           home.New,
 		page.Sync:           sync.New,
