@@ -3,12 +3,12 @@ package main
 import (
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/satelliondao/satellion/router"
+	"github.com/satelliondao/satellion/ui/framework"
 	"github.com/satelliondao/satellion/ui/home"
 	"github.com/satelliondao/satellion/ui/page"
 	"github.com/satelliondao/satellion/ui/passphrase"
 	"github.com/satelliondao/satellion/ui/receive"
 	"github.com/satelliondao/satellion/ui/send"
-	"github.com/satelliondao/satellion/ui/staff"
 	"github.com/satelliondao/satellion/ui/sync"
 	"github.com/satelliondao/satellion/ui/verify_mnemonic"
 	"github.com/satelliondao/satellion/ui/wallet_create"
@@ -19,8 +19,8 @@ import (
 
 func main() {
 	r := router.NewRouter()
-	ctx := staff.NewContext(r)
-	pages := map[string]staff.PageFactory{
+	ctx := framework.NewContext(r)
+	pages := map[string]framework.PageFactory{
 		page.Home:           home.New,
 		page.Sync:           sync.New,
 		page.CreateWallet:   wallet_create.New,
@@ -38,7 +38,7 @@ func main() {
 		panic(err)
 	}
 
-	app := staff.NewApp(ctx, pages, startPage(walletCount))
+	app := framework.NewApp(ctx, pages, startPage(walletCount))
 	_, _ = tea.NewProgram(app, tea.WithAltScreen()).Run()
 }
 

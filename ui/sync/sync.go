@@ -9,14 +9,14 @@ import (
 	"github.com/satelliondao/satellion/neutrino"
 	"github.com/satelliondao/satellion/stdout"
 	"github.com/satelliondao/satellion/ui/balance"
+	"github.com/satelliondao/satellion/ui/framework"
 	"github.com/satelliondao/satellion/ui/page"
-	"github.com/satelliondao/satellion/ui/staff"
 )
 
 type tickMsg time.Time
 
 type state struct {
-	ctx        *staff.AppContext
+	ctx        *framework.AppContext
 	height     int
 	timestamp  time.Time
 	peers      int
@@ -24,7 +24,7 @@ type state struct {
 	balance    *balance.State
 }
 
-func New(ctx *staff.AppContext) staff.Page {
+func New(ctx *framework.AppContext) framework.Page {
 	s := &state{ctx: ctx}
 	s.balance = balance.New(ctx)
 	s.balance.SetOnComplete(s.onBalanceComplete)
@@ -45,7 +45,7 @@ func (s *state) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.KeyMsg:
 		if stdout.ShouldQuit(v) || v.Type == tea.KeyEsc {
 			_ = s.ctx.Router.StopChain()
-			return s, staff.Navigate(page.Home)
+			return s, framework.Navigate(page.Home)
 		}
 		if s.isComplete && v.String() == "r" {
 			return s, s.balance.StartScan()
@@ -89,7 +89,7 @@ func (s *state) tick() tea.Cmd {
 }
 
 func (s *state) View() string {
-	v := staff.NewViewBuilder()
+	v := framework.NewViewBuilder()
 	if s.isComplete {
 		v.Line(s.renderComplete())
 		v.Line("")

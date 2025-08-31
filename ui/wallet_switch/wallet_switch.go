@@ -5,20 +5,20 @@ import (
 
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/satelliondao/satellion/stdout"
+	"github.com/satelliondao/satellion/ui/framework"
 	"github.com/satelliondao/satellion/ui/page"
-	"github.com/satelliondao/satellion/ui/staff"
 	"github.com/satelliondao/satellion/wallet"
 )
 
 type state struct {
-	ctx     *staff.AppContext
+	ctx     *framework.AppContext
 	wallets []wallet.Wallet
 	active  string
 	cursor  int
 	err     string
 }
 
-func New(ctx *staff.AppContext) staff.Page { return &state{ctx: ctx} }
+func New(ctx *framework.AppContext) framework.Page { return &state{ctx: ctx} }
 
 func (m *state) Init() tea.Cmd {
 	wallets, err := m.ctx.WalletRepo.GetAll()
@@ -55,7 +55,7 @@ func (m *state) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 		case "enter":
 			if len(m.wallets) == 0 {
-				return m, staff.Navigate(page.Home)
+				return m, framework.Navigate(page.Home)
 			}
 			selected := m.wallets[m.cursor].Name
 			if err := m.ctx.WalletRepo.SetDefault(selected); err != nil {
@@ -63,14 +63,14 @@ func (m *state) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				return m, nil
 			}
 			m.ctx.TempPassphrase = ""
-			return m, staff.Navigate(page.UnlockWallet)
+			return m, framework.Navigate(page.UnlockWallet)
 		}
 	}
 	return m, nil
 }
 
 func (m *state) View() string {
-	v := staff.NewViewBuilder()
+	v := framework.NewViewBuilder()
 	v.Line("Switch active wallet")
 	if m.err != "" {
 		v.Line(m.err)

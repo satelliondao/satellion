@@ -3,19 +3,19 @@ package passphrase
 import (
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/satelliondao/satellion/ui/framework"
 	"github.com/satelliondao/satellion/ui/page"
-	"github.com/satelliondao/satellion/ui/staff"
 )
 
 type State struct {
-	ctx        *staff.AppContext
+	ctx        *framework.AppContext
 	passInput  textinput.Model
 	confirm    textinput.Model
 	err        string
 	confirming bool
 }
 
-func New(ctx *staff.AppContext) staff.Page {
+func New(ctx *framework.AppContext) framework.Page {
 	m := State{ctx: ctx}
 	in := textinput.New()
 	in.Focus()
@@ -49,7 +49,7 @@ func (m State) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					}
 					m.ctx.TempWalletName = ""
 					m.ctx.TempMnemonic = nil
-					return m, staff.Navigate(page.Home)
+					return m, framework.Navigate(page.Home)
 				}
 				m.confirm = textinput.New()
 				m.confirm.Placeholder = "Confirm passphrase"
@@ -71,7 +71,7 @@ func (m State) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 			m.ctx.TempWalletName = ""
 			m.ctx.TempMnemonic = nil
-			return m, staff.Navigate(page.Home)
+			return m, framework.Navigate(page.Home)
 		}
 	}
 	if m.confirming {
@@ -83,7 +83,7 @@ func (m State) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (m State) View() string {
-	v := staff.NewViewBuilder()
+	v := framework.NewViewBuilder()
 	if !m.confirming {
 		v.Line("Set an optional passphrase. Leave empty if none.")
 		v.Line(m.passInput.View())

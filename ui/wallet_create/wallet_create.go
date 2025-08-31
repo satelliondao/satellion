@@ -7,18 +7,18 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/fatih/color"
 	"github.com/satelliondao/satellion/mnemonic"
+	"github.com/satelliondao/satellion/ui/framework"
 	"github.com/satelliondao/satellion/ui/page"
-	"github.com/satelliondao/satellion/ui/staff"
 )
 
 type state struct {
-	ctx                *staff.AppContext
+	ctx                *framework.AppContext
 	nameInput          textinput.Model
 	nameInputCompleted bool
 	mnemonic           *mnemonic.Mnemonic
 }
 
-func initialState(ctx *staff.AppContext) state {
+func initialState(ctx *framework.AppContext) state {
 	i := textinput.New()
 	i.Placeholder = "Enter wallet name"
 	i.Focus()
@@ -27,7 +27,7 @@ func initialState(ctx *staff.AppContext) state {
 	return state{ctx: ctx, nameInput: i}
 }
 
-func New(ctx *staff.AppContext) staff.Page {
+func New(ctx *framework.AppContext) framework.Page {
 	return initialState(ctx)
 }
 
@@ -52,7 +52,7 @@ func (m state) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					m.ctx.TempWalletName = m.nameInput.Value()
 					m.ctx.TempMnemonic = m.mnemonic
 				}
-				return m, staff.Navigate(page.VerifyMnemonic)
+				return m, framework.Navigate(page.VerifyMnemonic)
 			}
 		}
 
@@ -66,7 +66,7 @@ func (m state) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (m state) View() string {
-	v := staff.NewViewBuilder()
+	v := framework.NewViewBuilder()
 	if m.mnemonic == nil {
 		v.Line("Get name for your wallet")
 		v.Line(m.nameInput.View())

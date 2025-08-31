@@ -6,14 +6,14 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/fatih/color"
 	"github.com/satelliondao/satellion/stdout"
+	"github.com/satelliondao/satellion/ui/framework"
 	"github.com/satelliondao/satellion/ui/page"
-	"github.com/satelliondao/satellion/ui/staff"
 	"github.com/satelliondao/satellion/wallet"
 )
 
 type state struct {
-	ctx      *staff.AppContext
-	selector *staff.ChoiceSelector
+	ctx      *framework.AppContext
+	selector *framework.ChoiceSelector
 	w        *wallet.Wallet
 	items    []menuItem
 }
@@ -29,7 +29,7 @@ var baseMenuItems = []menuItem{
 	{label: "Send", page: page.Send},
 }
 
-func New(ctx *staff.AppContext) staff.Page {
+func New(ctx *framework.AppContext) framework.Page {
 	m := &state{ctx: ctx}
 	m.rebuildMenu()
 	return m
@@ -40,13 +40,13 @@ func (m *state) rebuildMenu() {
 	items = append(items, baseMenuItems...)
 	m.items = items
 
-	choices := make([]staff.Choice, len(items))
+	choices := make([]framework.Choice, len(items))
 	for i, item := range items {
-		choices[i] = staff.Choice{Label: item.label, Value: item.page}
+		choices[i] = framework.Choice{Label: item.label, Value: item.page}
 	}
 
 	if m.selector == nil {
-		m.selector = staff.NewChoiceSelector(choices)
+		m.selector = framework.NewChoiceSelector(choices)
 	} else {
 		m.selector.SetChoices(choices)
 	}
@@ -64,8 +64,8 @@ func (m *state) Init() tea.Cmd {
 func (m *state) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	result := m.selector.Update(msg)
 	// Handle selection results
-	if result.Action == staff.ActionSelection && result.Selected != nil {
-		return m, staff.Navigate(result.Selected.Value.(string))
+	if result.Action == framework.ActionSelection && result.Selected != nil {
+		return m, framework.Navigate(result.Selected.Value.(string))
 	}
 	// Handle other key messages if not consumed by selector
 	if !result.Consumed {
@@ -81,7 +81,7 @@ func (m *state) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (m *state) View() string {
-	v := staff.NewViewBuilder()
+	v := framework.NewViewBuilder()
 	if m.w != nil {
 		v.Line(fmt.Sprintf("Wallet %s\n", color.New(color.Bold).Sprintf("%s", m.w.Name)))
 	}

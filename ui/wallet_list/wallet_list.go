@@ -5,20 +5,20 @@ import (
 
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/satelliondao/satellion/stdout"
+	"github.com/satelliondao/satellion/ui/framework"
 	"github.com/satelliondao/satellion/ui/page"
-	"github.com/satelliondao/satellion/ui/staff"
 	"github.com/satelliondao/satellion/wallet"
 )
 
 type state struct {
-	ctx     *staff.AppContext
+	ctx     *framework.AppContext
 	wallets []wallet.Wallet
 }
 type errorMsg struct {
 	err error
 }
 
-func New(ctx *staff.AppContext) staff.Page {
+func New(ctx *framework.AppContext) framework.Page {
 	return &state{ctx: ctx}
 }
 
@@ -38,14 +38,14 @@ func (m *state) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, tea.Quit
 		}
 		if v.String() == "enter" {
-			return m, staff.Navigate(page.Home)
+			return m, framework.Navigate(page.Home)
 		}
 	}
 	return m, nil
 }
 
 func (m *state) View() string {
-	v := staff.NewViewBuilder()
+	v := framework.NewViewBuilder()
 
 	for i, w := range m.wallets {
 		mn, err := m.ctx.Router.WalletRepo.Get(w.Name, "")

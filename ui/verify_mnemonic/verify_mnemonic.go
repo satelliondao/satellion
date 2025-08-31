@@ -10,14 +10,14 @@ import (
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/satelliondao/satellion/mnemonic"
+	"github.com/satelliondao/satellion/ui/framework"
 	"github.com/satelliondao/satellion/ui/page"
-	"github.com/satelliondao/satellion/ui/staff"
 )
 
 const wordCount = 3
 
 type State struct {
-	ctx      *staff.AppContext
+	ctx      *framework.AppContext
 	mnemonic *mnemonic.Mnemonic
 	inputs   []textinput.Model
 	focus    int
@@ -25,7 +25,7 @@ type State struct {
 	err      string
 }
 
-func New(ctx *staff.AppContext) staff.Page {
+func New(ctx *framework.AppContext) framework.Page {
 	m := State{ctx: ctx}
 	if ctx != nil {
 		m.mnemonic = ctx.TempMnemonic
@@ -74,7 +74,7 @@ func (m State) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.inputs[m.focus].Focus()
 				return m, nil
 			}
-			return m, staff.Navigate(page.Passphrase)
+			return m, framework.Navigate(page.Passphrase)
 		}
 	}
 	if len(m.inputs) > 0 {
@@ -87,7 +87,7 @@ func (m State) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (m State) View() string {
-	v := staff.NewViewBuilder()
+	v := framework.NewViewBuilder()
 	if m.mnemonic == nil {
 		return "Verify your mnemonic\n\nMnemonic not found. Press Esc to go back."
 	}
