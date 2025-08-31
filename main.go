@@ -31,7 +31,10 @@ func main() {
 	startPage := page.UnlockWallet
 
 	count, err := ctx.WalletRepo.WalletCount()
-	if err == nil && count == 0 {
+	if err != nil {
+		panic(err)
+	}
+	if count == 0 {
 		startPage = page.CreateWallet
 	}
 

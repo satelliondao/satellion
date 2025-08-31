@@ -188,5 +188,10 @@ func (s *WalletDB) GetActiveWalletName() (string, error) {
 
 func (s *WalletDB) toModel(w WalletEntity, passphrase string) *wallet.Wallet {
 	mnemonic := mnemonic.New(w.Mnemonic)
-	return wallet.New(&mnemonic, passphrase, w.Name, w.NextChangeIndex, w.NextReceiveIndex, w.Lock)
+	model := wallet.New(&mnemonic, passphrase, w.Lock)
+	model.Name = w.Name
+	model.NextChangeIndex = w.NextChangeIndex
+	model.NextReceiveIndex = w.NextReceiveIndex
+	model.CreatedAt = w.CreatedAt
+	return model
 }

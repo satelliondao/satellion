@@ -33,3 +33,4 @@ go.work.sum
 satellion.db
 bin
 .DS_Store
+satellion

@@ -9,24 +9,30 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/btcsuite/btcd/btcutil/gcs"
 	"github.com/btcsuite/btcd/chaincfg"
+	"github.com/btcsuite/btcd/chaincfg/chainhash"
+	"github.com/btcsuite/btcd/wire"
 	bdb "github.com/btcsuite/btcwallet/walletdb"
 	"github.com/fatih/color"
 	"github.com/lightninglabs/neutrino"
 	"github.com/lightninglabs/neutrino/headerfs"
 	"github.com/satelliondao/satellion/config"
+	"github.com/satelliondao/satellion/ports"
 	"github.com/satelliondao/satellion/walletdb"
 )
 
-type Chain struct {
-	chainService *neutrino.ChainService
-	config       *config.Config
-	db           bdb.DB
+type ChainService struct {
+	neutrino *neutrino.ChainService
+	config   *config.Config
+	db       bdb.DB
 }
 
-func NewChain(
+var _ ports.ChainService = (*ChainService)(nil)
+
+func NewChainService(
 	config *config.Config,
-) *Chain {
+) *ChainService {
 	home, err := os.UserHomeDir()
 	if err != nil {
 		home = "."
@@ -49,30 +55,38 @@ func NewChain(
 	if err != nil {
 		log.Fatal(`failed to create chain service: `, err)
 	}
-	return &Chain{
-		chainService: chainService,
-		config:       config,
-		db:           db,
+	return &ChainService{
+		neutrino: chainService,
+		config:   config,
+		db:       db,
 	}
 }
 
-func (c *Chain) BestBlock() (*headerfs.BlockStamp, error) {
-	return c.chainService.BestBlock()
+func (c *ChainService) GetCFilter(hash chainhash.Hash) (*gcs.Filter, error) {
+	return c.neutrino.GetCFilter(hash, wire.GCSFilterRegular)
 }
 
-func (c *Chain) Start() error {
-	return c.chainService.Start()
+func (c *ChainService) GetBlockHash(height int64) (*chainhash.Hash, error) {
+	return c.neutrino.GetBlockHash(height)
 }
 
-func (c *Chain) ConnectedCount() int32 {
-	return c.chainService.ConnectedCount()
+func (c *ChainService) BestBlock() (*headerfs.BlockStamp, error) {
+	return c.neutrino.BestBlock()
 }
 
-func (c *Chain) Sync() error {
-	if err := c.chainService.Start(); err != nil {
+func (c *ChainService) Start() error {
+	return c.neutrino.Start()
+}
+
+func (c *ChainService) ConnectedCount() int32 {
+	return c.neutrino.ConnectedCount()
+}
+
+func (c *ChainService) Sync() error {
+	if err := c.neutrino.Start(); err != nil {
 		return err
 	}
-	defer func() { _ = c.chainService.Stop() }()
+	defer func() { _ = c.neutrino.Stop() }()
 	sigCh := make(chan os.Signal, 1)
 	signal.Notify(sigCh, os.Interrupt, syscall.SIGTERM)
 	ticker := time.NewTicker(1 * time.Second)
@@ -80,15 +94,15 @@ func (c *Chain) Sync() error {
 	for {
 		select {
 		case <-ticker.C:
-			stamp, err := c.chainService.BestBlock()
+			stamp, err := c.neutrino.BestBlock()
 			if err != nil {
 				continue
 			}
 
-			if int(c.chainService.ConnectedCount()) >= c.config.MinPeers {
+			if int(c.neutrino.ConnectedCount()) >= c.config.MinPeers {
 				isCurrent := false
 				type isCurrentCap interface{ IsCurrent() bool }
-				if v, ok := interface{}(c.chainService).(isCurrentCap); ok {
+				if v, ok := interface{}(c.neutrino).(isCurrentCap); ok {
 					isCurrent = v.IsCurrent()
 				} else {
 					if time.Since(stamp.Timestamp) < 10*time.Minute {
@@ -108,14 +122,18 @@ func (c *Chain) Sync() error {
 	}
 }
 
-func (c *Chain) IsSynced() bool {
-	return c.chainService.IsCurrent()
+func (c *ChainService) IsSynced() bool {
+	return c.neutrino.IsCurrent()
 }
 
-func (c *Chain) Stop() error {
-	_ = c.chainService.Stop()
+func (c *ChainService) Stop() error {
+	_ = c.neutrino.Stop()
 	if c.db != nil {
 		return c.db.Close()
 	}
 	return nil
+}
+
+func (c *ChainService) GetBlockHeader(hash *chainhash.Hash) (*wire.BlockHeader, error) {
+	return c.neutrino.GetBlockHeader(hash)
 }

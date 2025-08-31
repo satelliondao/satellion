@@ -1,13 +1,18 @@
 package walletdb
 
-import "github.com/satelliondao/satellion/wallet"
+import (
+	"time"
+
+	"github.com/satelliondao/satellion/wallet"
+)
 
 type WalletEntity struct {
-	Name             string   `json:"name"`
-	Mnemonic         []string `json:"mnemonic"`
-	Lock             string   `json:"lock"`
-	NextChangeIndex  uint32   `json:"next_change_index"`
-	NextReceiveIndex uint32   `json:"next_receive_index"`
+	Name             string    `json:"name"`
+	Mnemonic         []string  `json:"mnemonic"`
+	Lock             string    `json:"lock"`
+	NextChangeIndex  uint32    `json:"next_change_index"`
+	NextReceiveIndex uint32    `json:"next_receive_index"`
+	CreatedAt        time.Time `json:"created_at"`
 }
 
 func NewWalletEntity(w *wallet.Wallet) *WalletEntity {
@@ -23,5 +28,6 @@ func NewWalletEntity(w *wallet.Wallet) *WalletEntity {
 		Lock:             w.Lock,
 		NextChangeIndex:  w.NextChangeIndex,
 		NextReceiveIndex: w.NextReceiveIndex,
+		CreatedAt:        w.CreatedAt,
 	}
 }

@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"time"
 
 	"github.com/lightninglabs/neutrino/headerfs"
 	"github.com/satelliondao/satellion/config"
@@ -17,7 +18,7 @@ import (
 
 type Router struct {
 	WalletRepo *walletdb.WalletDB
-	Chain      *neutrino.Chain
+	Chain      *neutrino.ChainService
 	Config     *config.Config
 }
 
@@ -53,7 +54,7 @@ func (r *Router) StartChain() error {
 		}
 		r.Config = loaded
 	}
-	r.Chain = neutrino.NewChain(r.Config)
+	r.Chain = neutrino.NewChainService(r.Config)
 	return r.Chain.Start()
 }
 
@@ -89,7 +90,11 @@ func (r *Router) AddWallet(name string, m mnemonic.Mnemonic, passphrase string) 
 	if name == "" {
 		return fmt.Errorf("invalid wallet data")
 	}
-	err := r.WalletRepo.Save(wallet.New(&m, passphrase, name, 0, 0, ""))
+	model := wallet.New(&m, passphrase, "")
+	model.Name = name
+	model.CreatedAt = time.Now()
+
+	err := r.WalletRepo.Save(model)
 	if err != nil {
 		return err
 	}
@@ -112,4 +117,29 @@ func (r *Router) Unlock(passphrase string) error {
 		return fmt.Errorf("invalid passphrase")
 	}
 	return nil
+}
+
+// GetWalletBalance scans for wallet balance using compact filters from creation time
+func (r *Router) GetWalletBalance(passphrase string) (uint64, error) {
+	info, err := r.GetWalletBalanceInfo(passphrase)
+	if err != nil {
+		return 0, err
+	}
+	return info.Balance, nil
+}
+
+// GetWalletBalanceInfo scans for wallet balance and UTXO count using compact filters from creation time
+func (r *Router) GetWalletBalanceInfo(passphrase string) (*wallet.BalanceInfo, error) {
+	if r.Chain == nil {
+		return nil, fmt.Errorf("chain not started")
+	}
+	w, err := r.WalletRepo.GetActiveWallet(passphrase)
+	if err != nil {
+		return nil, err
+	}
+	if w == nil {
+		return nil, fmt.Errorf("no active wallet")
+	}
+	balanceService := wallet.NewBalanceService(r.Chain)
+	return balanceService.ScanWalletBalanceInfo(w)
 }

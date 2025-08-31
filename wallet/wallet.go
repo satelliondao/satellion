@@ -4,6 +4,7 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"fmt"
+	"time"
 
 	"github.com/btcsuite/btcd/btcec/v2"
 	"github.com/btcsuite/btcd/btcutil/hdkeychain"
@@ -19,14 +20,12 @@ type Wallet struct {
 	Name             string
 	IsDefault        bool
 	Lock             string
+	CreatedAt        time.Time
 }
 
 func New(
 	mnemonic *mnemonic.Mnemonic,
 	passphrase string,
-	name string,
-	nextChangeIndex uint32,
-	nextReceiveIndex uint32,
 	lock string,
 ) *Wallet {
 	seed := mnemonic.Seed(passphrase)
@@ -35,12 +34,9 @@ func New(
 		panic(fmt.Sprintf("failed to create root key: %v", err))
 	}
 	w := &Wallet{
-		RootKey:          rootKey,
-		NextChangeIndex:  nextChangeIndex,
-		NextReceiveIndex: nextReceiveIndex,
-		Name:             name,
-		Mnemonic:         mnemonic,
-		Lock:             lock,
+		RootKey:  rootKey,
+		Mnemonic: mnemonic,
+		Lock:     lock,
 	}
 	if lock == "" {
 		seedH := sha256.Sum256(seed)

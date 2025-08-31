@@ -24,9 +24,9 @@ type errorMsg struct {
 }
 
 var baseMenuItems = []menuItem{
+	{label: "Syncronize blockchain", page: page.Sync},
 	{label: "Receive", page: page.Receive},
 	{label: "Send", page: page.Send},
-	{label: "Sync chain", page: page.Sync},
 }
 
 func New(ctx *frame.AppContext) frame.Page {

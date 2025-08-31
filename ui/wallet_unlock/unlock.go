@@ -95,8 +95,12 @@ func (m *state) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 func (m *state) View() string {
 	v := frame.NewViewBuilder()
-	name, _ := m.ctx.WalletRepo.GetActiveWalletName()
-	v.Line(fmt.Sprintf("Enter passphrase to unlock wallet %s\n", color.New(color.Bold).Sprintf("%s", name)))
+	name, err := m.ctx.WalletRepo.GetActiveWalletName()
+	if err != nil {
+		v.Line("No active wallet found\n")
+	} else {
+		v.Line(fmt.Sprintf("Enter passphrase to unlock wallet %s\n", color.New(color.Bold).Sprintf("%s", name)))
+	}
 	v.Line(m.input.View())
 	v.WithErrText(m.err)
 	v.Line("")

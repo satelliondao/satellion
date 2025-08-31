@@ -20,6 +20,11 @@ func NewViewBuilder() *ViewBuilder {
 	return b
 }
 
+func (b *ViewBuilder) HideLogo() *ViewBuilder {
+	b.v = ""
+	return b
+}
+
 func (b *ViewBuilder) withLogo() *ViewBuilder {
 	title := "SATELLION WALLET"
 	b.v = fmt.Sprintf("%s\n", color.New(color.Bold).Sprintf("%s", title))

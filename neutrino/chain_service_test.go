@@ -21,17 +21,17 @@ func TestGetCompactFilter(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	chain := NewChain(cfg)
-	err = chain.Start()
+	cnains := NewChainService(cfg)
+	err = cnains.Start()
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer chain.Stop()
-	blockhash, err := chain.chainService.GetBlockHash(TestBlockHeight)
+	defer cnains.Stop()
+	blockhash, err := cnains.GetBlockHash(TestBlockHeight)
 	if err != nil {
 		t.Fatal(err)
 	}
-	filter, err := chain.chainService.GetCFilter(*blockhash, wire.GCSFilterRegular)
+	filter, err := cnains.neutrino.GetCFilter(*blockhash, wire.GCSFilterRegular)
 	if err != nil {
 		t.Fatal(err)
 	}
