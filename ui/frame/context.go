@@ -2,8 +2,8 @@ package frame
 
 import (
 	"github.com/satelliondao/satellion/mnemonic"
+	"github.com/satelliondao/satellion/neutrino"
 	usecase "github.com/satelliondao/satellion/router"
-	"github.com/satelliondao/satellion/wallet"
 	"github.com/satelliondao/satellion/walletdb"
 )
 
@@ -13,7 +13,7 @@ type AppContext struct {
 	TempWalletName string
 	TempMnemonic   *mnemonic.Mnemonic
 	TempPassphrase string
-	WalletInfo     *wallet.BalanceInfo
+	WalletInfo     *neutrino.BalanceInfo
 }
 
 func NewContext(router *usecase.Router) *AppContext {

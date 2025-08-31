@@ -1,4 +1,4 @@
-package wallet
+package neutrino
 
 import (
 	"testing"
@@ -9,6 +9,7 @@ import (
 	"github.com/btcsuite/btcd/wire"
 	"github.com/lightninglabs/neutrino/headerfs"
 	"github.com/satelliondao/satellion/mnemonic"
+	"github.com/satelliondao/satellion/wallet"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
@@ -30,7 +31,7 @@ func TestScanWalletBalance_WalletCreatedAtZero(t *testing.T) {
 		"abandon", "abandon", "abandon", "abandon", "abandon", "about",
 	}
 	mnemonic := mnemonic.New(words)
-	wallet := New(&mnemonic, passphrase, "test")
+	wallet := wallet.New(&mnemonic, passphrase, "test")
 	wallet.CreatedAt = time.Time{} // Zero time
 	balance, err := scanner.ScanWalletBalanceInfo(wallet)
 	assert.Error(t, err)
@@ -46,7 +47,7 @@ func TestScanWalletBalance_ChainError(t *testing.T) {
 		"abandon", "abandon", "abandon", "abandon", "abandon", "about",
 	}
 	mnemonic := mnemonic.New(words)
-	wallet := New(&mnemonic, passphrase, "test")
+	wallet := wallet.New(&mnemonic, passphrase, "test")
 	wallet.CreatedAt = time.Now().Add(-24 * time.Hour)
 	mockChain.On("BestBlock").Return((*headerfs.BlockStamp)(nil), assert.AnError)
 	balance, err := scanner.ScanWalletBalanceInfo(wallet)
@@ -63,7 +64,7 @@ func TestScanWalletBalance_Success(t *testing.T) {
 		"abandon", "abandon", "abandon", "abandon", "abandon", "about",
 	}
 	mnemonic := mnemonic.New(words)
-	wallet := New(&mnemonic, passphrase, "test")
+	wallet := wallet.New(&mnemonic, passphrase, "test")
 	wallet.CreatedAt = time.Now().Add(-24 * time.Hour)
 	bestBlock := &headerfs.BlockStamp{
 		Height:    100,
@@ -109,7 +110,7 @@ func TestGenerateAllAddresses(t *testing.T) {
 		"abandon", "abandon", "abandon", "abandon", "abandon", "about",
 	}
 	mnemonic := mnemonic.New(words)
-	wallet := New(&mnemonic, passphrase, "test")
+	wallet := wallet.New(&mnemonic, passphrase, "test")
 	wallet.NextReceiveIndex = 3
 	wallet.NextChangeIndex = 3
 	mockChain := &MockChainService{}
@@ -137,7 +138,7 @@ func TestGenerateAllAddresses_ZeroIndices(t *testing.T) {
 		"abandon", "abandon", "abandon", "abandon", "abandon", "about",
 	}
 	mnemonic := mnemonic.New(words)
-	wallet := New(&mnemonic, passphrase, "test")
+	wallet := wallet.New(&mnemonic, passphrase, "test")
 	mockChain := &MockChainService{}
 	scanner := NewBalanceService(mockChain)
 	addresses, err := scanner.generateAllAddresses(wallet)
@@ -152,7 +153,7 @@ func TestAddressesToScripts(t *testing.T) {
 		"abandon", "abandon", "abandon", "abandon", "abandon", "about",
 	}
 	mnemonic := mnemonic.New(words)
-	wallet := New(&mnemonic, passphrase, "test")
+	wallet := wallet.New(&mnemonic, passphrase, "test")
 	mockChain := &MockChainService{}
 	scanner := NewBalanceService(mockChain)
 	addresses, err := scanner.generateAllAddresses(wallet)

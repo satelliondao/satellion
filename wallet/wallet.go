@@ -46,11 +46,11 @@ func New(
 }
 
 func (w *Wallet) ReceiveAddress() (*Address, error) {
-	return w.deriveTaprootAddress(0, w.NextReceiveIndex)
+	return w.DeriveTaprootAddress(0, w.NextReceiveIndex)
 }
 
 func (w *Wallet) ChangeAddress() (*Address, error) {
-	return w.deriveTaprootAddress(1, w.NextChangeIndex)
+	return w.DeriveTaprootAddress(1, w.NextChangeIndex)
 }
 
 func (w *Wallet) NewReceiveAddress() (*Address, error) {
@@ -101,7 +101,7 @@ func (w *Wallet) deriveReceiveKeyPair(change, index uint32) (*btcec.PublicKey, *
 // deriveTaprootAddress generates a BIP 86 taproot address
 // following BIP 86 derivation path: m/86'/0'/0'/change/index
 // Returns an Address struct with the bech32m-encoded taproot address (bc1p...)
-func (w *Wallet) deriveTaprootAddress(change uint32, index uint32) (*Address, error) {
+func (w *Wallet) DeriveTaprootAddress(change uint32, index uint32) (*Address, error) {
 	pubKey, _, err := w.deriveReceiveKeyPair(change, index)
 	if err != nil {
 		return nil, fmt.Errorf("failed to derive receive key pair: %w", err)

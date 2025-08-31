@@ -5,8 +5,8 @@ import (
 
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/fatih/color"
+	"github.com/satelliondao/satellion/neutrino"
 	"github.com/satelliondao/satellion/ui/frame"
-	"github.com/satelliondao/satellion/wallet"
 )
 
 type BalanceState int
@@ -21,14 +21,14 @@ const (
 type balanceState struct {
 	ctx        *frame.AppContext
 	state      BalanceState
-	info       *wallet.BalanceInfo
+	info       *neutrino.BalanceInfo
 	err        error
 	progress   float64
-	onComplete func(*wallet.BalanceInfo, error)
+	onComplete func(*neutrino.BalanceInfo, error)
 }
 
 type balanceCompleteMsg struct {
-	info *wallet.BalanceInfo
+	info *neutrino.BalanceInfo
 	err  error
 }
 
@@ -43,7 +43,7 @@ func NewBalanceComponent(ctx *frame.AppContext) *balanceState {
 	}
 }
 
-func (bc *balanceState) SetOnComplete(callback func(*wallet.BalanceInfo, error)) {
+func (bc *balanceState) SetOnComplete(callback func(*neutrino.BalanceInfo, error)) {
 	bc.onComplete = callback
 }
 
@@ -91,7 +91,7 @@ func (bc *balanceState) HasError() bool {
 	return bc.state == BalanceError
 }
 
-func (bc *balanceState) GetInfo() *wallet.BalanceInfo {
+func (bc *balanceState) GetInfo() *neutrino.BalanceInfo {
 	return bc.info
 }
 

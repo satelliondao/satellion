@@ -127,7 +127,7 @@ func (r *Router) Unlock(passphrase string) error {
 }
 
 // GetWalletBalanceInfo scans for wallet balance and UTXO count using compact filters from creation time
-func (r *Router) GetWalletBalanceInfo(passphrase string) (*wallet.BalanceInfo, error) {
+func (r *Router) GetWalletBalanceInfo(passphrase string) (*neutrino.BalanceInfo, error) {
 	if r.Chain == nil {
 		return nil, fmt.Errorf("chain not started")
 	}
@@ -138,6 +138,6 @@ func (r *Router) GetWalletBalanceInfo(passphrase string) (*wallet.BalanceInfo, e
 	if w == nil {
 		return nil, fmt.Errorf("no active wallet")
 	}
-	balanceService := wallet.NewBalanceService(r.Chain)
+	balanceService := neutrino.NewBalanceService(r.Chain)
 	return balanceService.ScanWalletBalanceInfo(w)
 }

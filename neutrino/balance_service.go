@@ -1,4 +1,4 @@
-package wallet
+package neutrino
 
 import (
 	"fmt"
@@ -8,6 +8,7 @@ import (
 	"github.com/btcsuite/btcd/btcutil/gcs/builder"
 	"github.com/btcsuite/btcd/txscript"
 	"github.com/satelliondao/satellion/ports"
+	"github.com/satelliondao/satellion/wallet"
 )
 
 type BalanceInfo struct {
@@ -28,7 +29,7 @@ func (bs *BalanceService) SetProgressCallback(callback func(current, total int64
 	bs.onProgress = callback
 }
 
-func (bs *BalanceService) ScanWalletBalanceInfo(wallet *Wallet) (*BalanceInfo, error) {
+func (bs *BalanceService) ScanWalletBalanceInfo(wallet *wallet.Wallet) (*BalanceInfo, error) {
 	if wallet.CreatedAt.IsZero() {
 		return nil, fmt.Errorf("wallet creation time not set")
 	}
@@ -110,22 +111,22 @@ func (bs *BalanceService) findBlockHeightFromTime(createdAt time.Time, bestHeigh
 	return left, nil
 }
 
-func (bs *BalanceService) generateAllAddresses(wallet *Wallet) ([]*Address, error) {
-	var addresses []*Address
-	maxIndex := wallet.NextReceiveIndex
-	if wallet.NextChangeIndex > maxIndex {
-		maxIndex = wallet.NextChangeIndex
+func (bs *BalanceService) generateAllAddresses(w *wallet.Wallet) ([]*wallet.Address, error) {
+	var addresses []*wallet.Address
+	maxIndex := w.NextReceiveIndex
+	if w.NextChangeIndex > maxIndex {
+		maxIndex = w.NextChangeIndex
 	}
 	if maxIndex == 0 {
 		maxIndex = 20
 	}
 	for i := uint32(0); i <= maxIndex; i++ {
-		receiveAddr, err := wallet.deriveTaprootAddress(0, i)
+		receiveAddr, err := w.DeriveTaprootAddress(0, i)
 		if err != nil {
 			return nil, fmt.Errorf("failed to derive receive address %d: %w", i, err)
 		}
 		addresses = append(addresses, receiveAddr)
-		changeAddr, err := wallet.deriveTaprootAddress(1, i)
+		changeAddr, err := w.DeriveTaprootAddress(1, i)
 		if err != nil {
 			return nil, fmt.Errorf("failed to derive change address %d: %w", i, err)
 		}
@@ -134,7 +135,7 @@ func (bs *BalanceService) generateAllAddresses(wallet *Wallet) ([]*Address, erro
 	return addresses, nil
 }
 
-func (bs *BalanceService) addressesToScripts(addresses []*Address) ([][]byte, error) {
+func (bs *BalanceService) addressesToScripts(addresses []*wallet.Address) ([][]byte, error) {
 	var scripts [][]byte
 	for _, addr := range addresses {
 		script, err := txscript.PayToAddrScript(addr.Address)

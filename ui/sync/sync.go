@@ -6,10 +6,10 @@ import (
 
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/fatih/color"
+	"github.com/satelliondao/satellion/neutrino"
 	"github.com/satelliondao/satellion/stdout"
 	"github.com/satelliondao/satellion/ui/frame"
 	"github.com/satelliondao/satellion/ui/frame/page"
-	"github.com/satelliondao/satellion/wallet"
 )
 
 type tickMsg time.Time
@@ -72,7 +72,7 @@ func (s *state) handleTick() tea.Cmd {
 	return s.tick()
 }
 
-func (s *state) onBalanceComplete(info *wallet.BalanceInfo, err error) {
+func (s *state) onBalanceComplete(info *neutrino.BalanceInfo, err error) {
 	if err == nil && info != nil {
 		s.ctx.WalletInfo = info
 	}
