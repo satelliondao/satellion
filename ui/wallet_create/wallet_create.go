@@ -8,7 +8,7 @@ import (
 	"github.com/fatih/color"
 	"github.com/satelliondao/satellion/mnemonic"
 	"github.com/satelliondao/satellion/ui/framework"
-	"github.com/satelliondao/satellion/ui/page"
+	"github.com/satelliondao/satellion/ui/router"
 )
 
 type state struct {
@@ -18,17 +18,8 @@ type state struct {
 	mnemonic           *mnemonic.Mnemonic
 }
 
-func initialState(ctx *framework.AppContext) state {
-	i := textinput.New()
-	i.Placeholder = "Enter wallet name"
-	i.Focus()
-	i.CharLimit = 50
-	i.Width = 20
-	return state{ctx: ctx, nameInput: i}
-}
-
-func New(ctx *framework.AppContext) framework.Page {
-	return initialState(ctx)
+func New(ctx *framework.AppContext, params interface{}) framework.Page {
+	return &state{ctx: ctx, nameInput: nameInput()}
 }
 
 func (m state) Init() tea.Cmd {
@@ -48,11 +39,7 @@ func (m state) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.nameInputCompleted = true
 				m.mnemonic = mnemonic.NewRandom()
 			} else {
-				if m.ctx != nil {
-					m.ctx.TempWalletName = m.nameInput.Value()
-					m.ctx.TempMnemonic = m.mnemonic
-				}
-				return m, framework.Navigate(page.VerifyMnemonic)
+				return m, router.VerifyMnemonic(m.nameInput.Value(), m.mnemonic)
 			}
 		}
 
@@ -82,4 +69,13 @@ func (m state) View() string {
 	}
 
 	return v.WithQuitText().Build()
+}
+
+func nameInput() textinput.Model {
+	i := textinput.New()
+	i.Placeholder = "Enter wallet name"
+	i.Focus()
+	i.CharLimit = 50
+	i.Width = 20
+	return i
 }

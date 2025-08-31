@@ -8,7 +8,7 @@ import (
 	"github.com/fatih/color"
 	"github.com/satelliondao/satellion/stdout"
 	"github.com/satelliondao/satellion/ui/framework"
-	"github.com/satelliondao/satellion/ui/page"
+	"github.com/satelliondao/satellion/ui/router"
 	"github.com/satelliondao/satellion/wallet"
 )
 
@@ -23,14 +23,13 @@ type errorMsg struct {
 	err string
 }
 
-func New(ctx *framework.AppContext) framework.Page {
-	return &state{
-		ctx: ctx,
-	}
+func New(ctx *framework.AppContext, params interface{}) framework.Page {
+	s := &state{ctx: ctx}
+	return s
 }
 
 func (s *state) Init() tea.Cmd {
-	w, err := s.ctx.Router.WalletRepo.GetActiveWallet(s.ctx.TempPassphrase)
+	w, err := s.ctx.WalletRepo.GetActiveWallet(s.ctx.Passphrase)
 	if err != nil || w == nil {
 		s.err = fmt.Errorf("wallet not available").Error()
 		return nil
@@ -55,7 +54,7 @@ func (s *state) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return s, tea.Quit
 		}
 		if v.Type == tea.KeyEsc {
-			return s, framework.Navigate(page.Home)
+			return s, router.Home()
 		}
 		if strings.ToLower(v.String()) == "r" {
 			return s, s.regenerateAddress()
@@ -86,7 +85,7 @@ func (s *state) View() string {
 	v.Line(color.New(color.FgCyan).Sprintf("Derivation Path: %d", s.address.DeriviationIndex))
 	v.Line("")
 	v.WithHelpText("R to generate new address")
-	v.WithHelpText("Esc or Ctrl+C to go back")
 	v.WithErrText(s.err)
+	v.WithQuitText()
 	return v.Build()
 }

@@ -6,7 +6,7 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/satelliondao/satellion/stdout"
 	"github.com/satelliondao/satellion/ui/framework"
-	"github.com/satelliondao/satellion/ui/page"
+	"github.com/satelliondao/satellion/ui/router"
 	"github.com/satelliondao/satellion/wallet"
 )
 
@@ -18,7 +18,9 @@ type state struct {
 	err     string
 }
 
-func New(ctx *framework.AppContext) framework.Page { return &state{ctx: ctx} }
+func New(ctx *framework.AppContext, params interface{}) framework.Page {
+	return &state{ctx: ctx}
+}
 
 func (m *state) Init() tea.Cmd {
 	wallets, err := m.ctx.WalletRepo.GetAll()
@@ -55,15 +57,14 @@ func (m *state) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 		case "enter":
 			if len(m.wallets) == 0 {
-				return m, framework.Navigate(page.Home)
+				return m, router.Home()
 			}
 			selected := m.wallets[m.cursor].Name
 			if err := m.ctx.WalletRepo.SetDefault(selected); err != nil {
 				m.err = err.Error()
 				return m, nil
 			}
-			m.ctx.TempPassphrase = ""
-			return m, framework.Navigate(page.UnlockWallet)
+			return m, router.UnlockWallet()
 		}
 	}
 	return m, nil

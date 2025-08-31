@@ -11,24 +11,26 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/satelliondao/satellion/mnemonic"
 	"github.com/satelliondao/satellion/ui/framework"
-	"github.com/satelliondao/satellion/ui/page"
+	"github.com/satelliondao/satellion/ui/router"
 )
 
 const wordCount = 3
 
 type State struct {
-	ctx      *framework.AppContext
-	mnemonic *mnemonic.Mnemonic
-	inputs   []textinput.Model
-	focus    int
-	indices  []int
-	err      string
+	ctx        *framework.AppContext
+	mnemonic   *mnemonic.Mnemonic
+	inputs     []textinput.Model
+	focus      int
+	indices    []int
+	err        string
+	walletName string
 }
 
-func New(ctx *framework.AppContext) framework.Page {
+func New(ctx *framework.AppContext, params interface{}) framework.Page {
 	m := State{ctx: ctx}
-	if ctx != nil {
-		m.mnemonic = ctx.TempMnemonic
+	if props, ok := params.(*router.VerifyMnemonicProps); ok {
+		m.walletName = props.WalletName
+		m.mnemonic = props.Mnemonic
 	}
 	if m.mnemonic != nil {
 		rand.Seed(time.Now().UnixNano())
@@ -74,7 +76,7 @@ func (m State) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.inputs[m.focus].Focus()
 				return m, nil
 			}
-			return m, framework.Navigate(page.Passphrase)
+			return m, router.Passphrase(m.walletName, m.mnemonic)
 		}
 	}
 	if len(m.inputs) > 0 {

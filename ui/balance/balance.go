@@ -120,7 +120,14 @@ func (s *State) View() string {
 
 func (s *State) scanBalance() tea.Cmd {
 	return func() tea.Msg {
-		info, err := s.ctx.Router.GetWalletBalanceInfo(s.ctx.TempPassphrase)
+		wallet, err := s.ctx.WalletRepo.GetActiveWallet(s.ctx.Passphrase)
+		if err != nil {
+			return balanceCompleteMsg{err: err}
+		}
+		info, err := s.ctx.ChainService.GetBalance(wallet)
+		if err != nil {
+			return balanceCompleteMsg{err: err}
+		}
 		return balanceCompleteMsg{info: info, err: err}
 	}
 }

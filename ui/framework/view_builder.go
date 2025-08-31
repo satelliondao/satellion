@@ -10,6 +10,7 @@ type ViewBuilder struct {
 	v        string
 	helpText string
 	errText  string
+	quitText bool
 }
 
 func NewViewBuilder() *ViewBuilder {
@@ -27,8 +28,7 @@ func (b *ViewBuilder) HideLogo() *ViewBuilder {
 
 func (b *ViewBuilder) withLogo() *ViewBuilder {
 	title := "SATELLION WALLET"
-	b.v = fmt.Sprintf("%s\n", color.New(color.Bold).Sprintf("%s", title))
-	b.v += "\n"
+	b.v = fmt.Sprintf("%s\n", color.New(color.Bold).Sprintln(title))
 	return b
 }
 
@@ -38,12 +38,12 @@ func (b *ViewBuilder) Line(s string) *ViewBuilder {
 }
 
 func (b *ViewBuilder) WithHelpText(s string) *ViewBuilder {
-	b.helpText += fmt.Sprintf("%s\n", s)
+	b.helpText += fmt.Sprintln(s)
 	return b
 }
 
 func (b *ViewBuilder) WithQuitText() *ViewBuilder {
-	b.v += color.New(color.FgWhite).Sprintf("\nctrl+c to exit")
+	b.quitText = true
 	return b
 }
 
@@ -55,10 +55,13 @@ func (b *ViewBuilder) WithErrText(s string) *ViewBuilder {
 func (b *ViewBuilder) Build() string {
 	v := b.v
 	if b.errText != "" {
-		v += color.New(color.FgHiRed).Sprintf("\n%s", b.errText)
+		v += color.New(color.FgHiRed).Sprintln(b.errText)
 	}
 	if b.helpText != "" {
-		v += color.New(color.FgHiBlack).Sprintf("\n%s", b.helpText)
+		v += color.New(color.FgHiBlack).Sprintln(b.helpText)
+	}
+	if b.quitText {
+		v += color.New(color.FgHiBlack).Sprintln("Esc to go home. Ctrl+C to exit")
 	}
 	return v
 }

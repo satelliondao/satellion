@@ -4,15 +4,16 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/satelliondao/satellion/stdout"
 	"github.com/satelliondao/satellion/ui/framework"
-	"github.com/satelliondao/satellion/ui/page"
+	"github.com/satelliondao/satellion/ui/router"
 )
 
 type state struct {
 	ctx *framework.AppContext
 }
 
-func New(ctx *framework.AppContext) framework.Page {
-	return &state{ctx: ctx}
+func New(ctx *framework.AppContext, params interface{}) framework.Page {
+	s := &state{ctx: ctx}
+	return s
 }
 
 func (m *state) Init() tea.Cmd {
@@ -26,7 +27,7 @@ func (m *state) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, tea.Quit
 		}
 		if v.Type == tea.KeyEsc {
-			return m, framework.Navigate(page.Home)
+			return m, router.Home()
 		}
 	}
 	return m, nil

@@ -6,7 +6,7 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/satelliondao/satellion/stdout"
 	"github.com/satelliondao/satellion/ui/framework"
-	"github.com/satelliondao/satellion/ui/page"
+	"github.com/satelliondao/satellion/ui/router"
 	"github.com/satelliondao/satellion/wallet"
 )
 
@@ -18,12 +18,12 @@ type errorMsg struct {
 	err error
 }
 
-func New(ctx *framework.AppContext) framework.Page {
+func New(ctx *framework.AppContext, params interface{}) framework.Page {
 	return &state{ctx: ctx}
 }
 
 func (m *state) Init() tea.Cmd {
-	wallets, err := m.ctx.Router.WalletRepo.GetAll()
+	wallets, err := m.ctx.WalletRepo.GetAll()
 	if err != nil {
 		return func() tea.Msg { return errorMsg{err: err} }
 	}
@@ -38,7 +38,7 @@ func (m *state) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, tea.Quit
 		}
 		if v.String() == "enter" {
-			return m, framework.Navigate(page.Home)
+			return m, router.Home()
 		}
 	}
 	return m, nil
@@ -48,7 +48,7 @@ func (m *state) View() string {
 	v := framework.NewViewBuilder()
 
 	for i, w := range m.wallets {
-		mn, err := m.ctx.Router.WalletRepo.Get(w.Name, "")
+		mn, err := m.ctx.WalletRepo.Get(w.Name, "")
 		mnemonicText := "<not found>"
 		if err == nil {
 			mnemonicText = mn.Mnemonic.String()

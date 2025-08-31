@@ -4,7 +4,6 @@ import (
 	"fmt"
 
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/fatih/color"
 	"github.com/satelliondao/satellion/stdout"
 	"github.com/satelliondao/satellion/ui/framework"
 	"github.com/satelliondao/satellion/ui/page"
@@ -29,7 +28,7 @@ var baseMenuItems = []menuItem{
 	{label: "Send", page: page.Send},
 }
 
-func New(ctx *framework.AppContext) framework.Page {
+func New(ctx *framework.AppContext, params interface{}) framework.Page {
 	m := &state{ctx: ctx}
 	m.rebuildMenu()
 	return m
@@ -53,7 +52,7 @@ func (m *state) rebuildMenu() {
 }
 
 func (m *state) Init() tea.Cmd {
-	wallet, err := m.ctx.Router.WalletRepo.GetActiveWallet(m.ctx.TempPassphrase)
+	wallet, err := m.ctx.WalletRepo.GetActiveWallet(m.ctx.Passphrase)
 	if err != nil {
 		return func() tea.Msg { return errorMsg{err: err} }
 	}
@@ -76,15 +75,15 @@ func (m *state) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 		}
 	}
-
 	return m, nil
 }
 
 func (m *state) View() string {
 	v := framework.NewViewBuilder()
 	if m.w != nil {
-		v.Line(fmt.Sprintf("Wallet %s\n", color.New(color.Bold).Sprintf("%s", m.w.Name)))
+		v.Line(fmt.Sprintf("Wallet: %s", m.w.Name))
 	}
 	v.Line(m.selector.Render())
+	v.WithQuitText()
 	return v.Build()
 }

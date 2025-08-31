@@ -1,8 +1,9 @@
 package main
 
 import (
+	"log"
+
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/satelliondao/satellion/router"
 	"github.com/satelliondao/satellion/ui/framework"
 	"github.com/satelliondao/satellion/ui/home"
 	"github.com/satelliondao/satellion/ui/page"
@@ -18,8 +19,10 @@ import (
 )
 
 func main() {
-	r := router.NewRouter()
-	ctx := framework.NewContext(r)
+	ctx, err := framework.NewContext()
+	if err != nil {
+		log.Fatalf("Failed to initialize app context: %v", err)
+	}
 	pages := map[string]framework.PageFactory{
 		page.Home:           home.New,
 		page.Sync:           sync.New,
@@ -32,12 +35,10 @@ func main() {
 		page.Receive:        receive.New,
 		page.Send:           send.New,
 	}
-
 	walletCount, err := ctx.WalletRepo.WalletCount()
 	if err != nil {
 		panic(err)
 	}
-
 	app := framework.NewApp(ctx, pages, startPage(walletCount))
 	_, _ = tea.NewProgram(app, tea.WithAltScreen()).Run()
 }

@@ -25,6 +25,15 @@ func getStoragePath() string {
 	return filepath.Join(homeDir, ".satellion", "config.json")
 }
 
+func (c *Config) setDefaults() {
+	if c.MinPeers == 0 {
+		c.MinPeers = 5
+	}
+	if c.SyncTimeoutMinutes == 0 {
+		c.SyncTimeoutMinutes = 30
+	}
+}
+
 func (c *Config) Load() (*Config, error) {
 	storagePath := getStoragePath()
 	jsonFile, err := os.Open(storagePath)
@@ -39,12 +48,7 @@ func (c *Config) Load() (*Config, error) {
 	if err != nil {
 		return nil, err
 	}
-	if config.MinPeers == 0 {
-		config.MinPeers = 5
-	}
-	if config.SyncTimeoutMinutes == 0 {
-		config.SyncTimeoutMinutes = 30
-	}
+	config.setDefaults()
 	return &config, nil
 }
 

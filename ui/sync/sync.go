@@ -10,7 +10,7 @@ import (
 	"github.com/satelliondao/satellion/stdout"
 	"github.com/satelliondao/satellion/ui/balance"
 	"github.com/satelliondao/satellion/ui/framework"
-	"github.com/satelliondao/satellion/ui/page"
+	"github.com/satelliondao/satellion/ui/router"
 )
 
 type tickMsg time.Time
@@ -24,7 +24,7 @@ type state struct {
 	balance    *balance.State
 }
 
-func New(ctx *framework.AppContext) framework.Page {
+func New(ctx *framework.AppContext, params interface{}) framework.Page {
 	s := &state{ctx: ctx}
 	s.balance = balance.New(ctx)
 	s.balance.SetOnComplete(s.onBalanceComplete)
@@ -32,7 +32,7 @@ func New(ctx *framework.AppContext) framework.Page {
 }
 
 func (s *state) Init() tea.Cmd {
-	if err := s.ctx.Router.StartChain(); err != nil {
+	if err := s.ctx.ChainService.Start(); err != nil {
 		panic(err)
 	}
 	return s.tick()
@@ -44,8 +44,8 @@ func (s *state) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch v := msg.(type) {
 	case tea.KeyMsg:
 		if stdout.ShouldQuit(v) || v.Type == tea.KeyEsc {
-			_ = s.ctx.Router.StopChain()
-			return s, framework.Navigate(page.Home)
+			_ = s.ctx.ChainService.Stop()
+			return s, router.Home()
 		}
 		if s.isComplete && v.String() == "r" {
 			return s, s.balance.StartScan()
@@ -59,7 +59,7 @@ func (s *state) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (s *state) handleTick() tea.Cmd {
-	stamp, peers, err := s.ctx.Router.BestBlock()
+	stamp, peers, err := s.ctx.ChainService.BestBlock()
 	if err != nil {
 		return s.tick()
 	}
@@ -74,14 +74,12 @@ func (s *state) handleTick() tea.Cmd {
 }
 
 func (s *state) onBalanceComplete(info *neutrino.BalanceInfo, err error) {
-	if err == nil && info != nil {
-		s.ctx.WalletInfo = info
-	}
+	// Balance info is now handled locally by the balance component
 }
 
 func (s *state) isSynced() bool {
-	syncTimeout := time.Duration(s.ctx.Router.SyncTimeoutMinutes()) * time.Minute
-	return time.Since(s.timestamp) < syncTimeout && s.peers >= s.ctx.Router.MinPeers()
+	syncTimeout := time.Duration(s.ctx.Config.SyncTimeoutMinutes) * time.Minute
+	return time.Since(s.timestamp) < syncTimeout && s.peers >= s.ctx.Config.MinPeers
 }
 
 func (s *state) tick() tea.Cmd {
@@ -90,47 +88,17 @@ func (s *state) tick() tea.Cmd {
 
 func (s *state) View() string {
 	v := framework.NewViewBuilder()
+	v.Line(color.New(color.FgHiBlue).Sprintf("Blockchain Sync"))
+	v.Line(fmt.Sprintf("Height: %d", s.height))
+	v.Line(fmt.Sprintf("Peers: %d", s.peers))
+	v.Line(fmt.Sprintf("Last block: %s", s.timestamp.Format("15:04:05")))
+	v.Line("")
 	if s.isComplete {
-		v.Line(s.renderComplete())
-		v.Line("")
-		v.Line(s.renderBalanceSection())
+		v.Line(color.New(color.FgGreen).Sprintf("✓ Synced"))
+		v.Line(s.balance.View())
+		v.WithHelpText("R to rescan")
 	} else {
-		v.Line(s.renderSyncing())
+		v.Line(color.New(color.FgYellow).Sprintf("⏳ Syncing..."))
 	}
 	return v.Build()
-}
-
-func (s *state) renderComplete() string {
-	minutesAgo := int(time.Since(s.timestamp).Minutes())
-	mempoolURL := fmt.Sprintf("https://mempool.space/block/%d", s.height)
-	return fmt.Sprintf(
-		color.New(color.FgGreen).Sprintf("Synchronization complete\n")+
-			"Block number: %d\n"+
-			"Mined %d min ago\n"+
-			"Explorer %s",
-		s.height, minutesAgo, mempoolURL)
-}
-
-func (s *state) renderBalanceSection() string {
-	instructions := ""
-	if s.balance.IsScanning() {
-		instructions = color.New(color.FgHiBlack).Sprintf("Scanning in progress... Press ESC to return to home")
-	} else {
-		instructions = color.New(color.FgHiBlack).Sprintf("Press 'r' to refresh balance • Press ESC to return to home")
-	}
-	return fmt.Sprintf(
-		color.New(color.FgCyan).Sprintf("Balance\n")+
-			"%s\n"+
-			"\n"+
-			"%s",
-		s.balance.View(), instructions)
-}
-
-func (s *state) renderSyncing() string {
-	return fmt.Sprintf(
-		"⏳ Syncing blockchain...\n"+
-			"Best height: %d\n"+
-			"Timestamp:   %s\n"+
-			"Peers:       %d",
-		s.height, s.timestamp.UTC().Format(time.RFC3339), s.peers)
 }
