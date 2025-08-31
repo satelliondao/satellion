@@ -79,7 +79,8 @@ func (s *state) onBalanceComplete(info *wallet.BalanceInfo, err error) {
 }
 
 func (s *state) isSynced() bool {
-	return time.Since(s.timestamp) < 20*time.Minute && s.peers >= s.ctx.Router.MinPeers()
+	syncTimeout := time.Duration(s.ctx.Router.SyncTimeoutMinutes()) * time.Minute
+	return time.Since(s.timestamp) < syncTimeout && s.peers >= s.ctx.Router.MinPeers()
 }
 
 func (s *state) tick() tea.Cmd {

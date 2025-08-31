@@ -12,6 +12,9 @@ type Config struct {
 	// MinPeers is the minimum number of connected peers required before considering sync complete.
 	// If omitted or zero in the config file, it defaults to 5.
 	MinPeers int `json:"min_peers"`
+	// SyncTimeoutMinutes is the maximum age in minutes for a block to be considered current.
+	// If omitted or zero in the config file, it defaults to 30 minutes.
+	SyncTimeoutMinutes int `json:"sync_timeout_minutes"`
 }
 
 func getStoragePath() string {
@@ -38,6 +41,9 @@ func (c *Config) Load() (*Config, error) {
 	}
 	if config.MinPeers == 0 {
 		config.MinPeers = 5
+	}
+	if config.SyncTimeoutMinutes == 0 {
+		config.SyncTimeoutMinutes = 30
 	}
 	return &config, nil
 }

@@ -6,8 +6,6 @@ We will develop a lightweight, secure, and transparent command-line Bitcoin wall
 
 The initial release will support Bitcoin only; consideration of other assets will be deferred until much later, and only after careful evaluation.
 
-Focus: macOS and Linux systems, with hierarchical deterministic (HD) wallet generation and support for modern Bitcoin Taproot address derivation.
-
 ## Principles
 
 ### Neutrino Client Protocol
@@ -23,7 +21,7 @@ No telemetry. Deterministic address rotation. Strong key encryption using OS-lev
 Roadmaps, discussions, and funding are public. Builds are reproducible and releases are signed. No “black box” binaries or hidden backdoors.
 
 ### Bitcoin-Native, Nothing Else
-Hierarchical Deterministic wallets (BIP32/39) with modern address standards only: SegWit (bech32) and Taproot. No legacy formats, no altcoins, no distractions.
+Hierarchical Deterministic wallets (BIP32/39) with modern address standards only - Taproot. No legacy formats, no altcoins, no distractions.
 
 ## Roadmap
 ![Roadmap](./research/roadmap/roadmap.png)

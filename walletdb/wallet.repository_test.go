@@ -26,7 +26,8 @@ func SaveAndVerify(t *testing.T) {
 	repo := New(db)
 	mnemonic := mnemonic.NewRandom()
 	name := "test-wallet"
-	wallet := wallet.New(mnemonic, "", name, 0, 0, "")
+	wallet := wallet.New(mnemonic, "", "")
+	wallet.Name = name
 	if err := repo.Save(wallet); err != nil {
 		t.Fatalf("save failed: %v", err)
 	}
@@ -54,7 +55,10 @@ func TestCreatedAtPersistence(t *testing.T) {
 	repo := New(db)
 	mnemonic := mnemonic.NewRandom()
 	name := "test-wallet-timestamp"
-	originalWallet := wallet.New(mnemonic, "", name, 5, 3, "")
+	originalWallet := wallet.New(mnemonic, "", "")
+	originalWallet.Name = name
+	originalWallet.NextReceiveIndex = 5
+	originalWallet.NextChangeIndex = 3
 	customTime := time.Date(2023, 1, 15, 10, 30, 45, 0, time.UTC)
 	originalWallet.CreatedAt = customTime
 	if err := repo.Save(originalWallet); err != nil {

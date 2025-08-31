@@ -46,7 +46,7 @@ func NewChainService(
 	if err != nil {
 		log.Fatal("failed to open neutrino db: ", err)
 	}
-	chainService, err := neutrino.NewChainService(neutrino.Config{
+	neutrino, err := neutrino.NewChainService(neutrino.Config{
 		DataDir:     dataDir,
 		Database:    db,
 		ChainParams: chaincfg.MainNetParams,
@@ -56,7 +56,7 @@ func NewChainService(
 		log.Fatal(`failed to create chain service: `, err)
 	}
 	return &ChainService{
-		neutrino: chainService,
+		neutrino: neutrino,
 		config:   config,
 		db:       db,
 	}
@@ -105,7 +105,7 @@ func (c *ChainService) Sync() error {
 				if v, ok := interface{}(c.neutrino).(isCurrentCap); ok {
 					isCurrent = v.IsCurrent()
 				} else {
-					if time.Since(stamp.Timestamp) < 10*time.Minute {
+					if time.Since(stamp.Timestamp) < time.Duration(c.config.SyncTimeoutMinutes)*time.Minute {
 						isCurrent = true
 					}
 				}

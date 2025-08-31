@@ -1,0 +1,9 @@
+{
+  "peers": [
+    "seed.bitcoin.sipa.be:8333",
+    "dnsseed.bluematt.me:8333",
+    "dnsseed.bitcoin.dashjr.org:8333"
+  ],
+  "min_peers": 5,
+  "sync_timeout_minutes": 30
+}

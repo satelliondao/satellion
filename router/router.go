@@ -85,6 +85,13 @@ func (r *Router) MinPeers() int {
 	return r.Config.MinPeers
 }
 
+func (r *Router) SyncTimeoutMinutes() int {
+	if r.Config == nil || r.Config.SyncTimeoutMinutes == 0 {
+		return 30
+	}
+	return r.Config.SyncTimeoutMinutes
+}
+
 // AddWallet saves the mnemonic under the provided wallet name.
 func (r *Router) AddWallet(name string, m mnemonic.Mnemonic, passphrase string) error {
 	if name == "" {
@@ -117,15 +124,6 @@ func (r *Router) Unlock(passphrase string) error {
 		return fmt.Errorf("invalid passphrase")
 	}
 	return nil
-}
-
-// GetWalletBalance scans for wallet balance using compact filters from creation time
-func (r *Router) GetWalletBalance(passphrase string) (uint64, error) {
-	info, err := r.GetWalletBalanceInfo(passphrase)
-	if err != nil {
-		return 0, err
-	}
-	return info.Balance, nil
 }
 
 // GetWalletBalanceInfo scans for wallet balance and UTXO count using compact filters from creation time

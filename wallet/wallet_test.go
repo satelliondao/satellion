@@ -17,7 +17,7 @@ func TestBIP86TaprootDerivation(t *testing.T) {
 	name := "test-wallet"
 
 	t.Run("BIP86TestVectors", func(t *testing.T) {
-		wallet := New(testMnemonic, passphrase, name, 0, 0, "")
+		wallet := New(testMnemonic, passphrase, name)
 
 		assert.Equal(t, "xprv9s21ZrQH143K3GJpoapnV8SFfukcVBSfeCficPSGfubmSFDxo1kuHnLisriDvSnRRuL2Qrg5ggqHKNVpxR86QEC8w35uxmGoggxtQTPvfUu", wallet.RootKey.String())
 
@@ -41,7 +41,7 @@ func TestBIP86TaprootDerivation(t *testing.T) {
 	})
 
 	t.Run("IndexIncrement", func(t *testing.T) {
-		wallet := New(testMnemonic, passphrase, name, 0, 5, "")
+		wallet := New(testMnemonic, passphrase, name)
 		initialReceiveIndex := wallet.NextReceiveIndex
 		initialChangeIndex := wallet.NextChangeIndex
 
@@ -61,7 +61,7 @@ func TestBIP86TaprootDerivation(t *testing.T) {
 	})
 
 	t.Run("AddressDifferenciation", func(t *testing.T) {
-		wallet := New(testMnemonic, passphrase, name, 0, 0, "")
+		wallet := New(testMnemonic, passphrase, name)
 
 		addr1, err1 := wallet.ReceiveAddress()
 		assert.NoError(t, err1)
@@ -80,7 +80,7 @@ func TestBIP86TaprootDerivation(t *testing.T) {
 	})
 
 	t.Run("ScriptPubKeyGeneration", func(t *testing.T) {
-		wallet := New(testMnemonic, passphrase, name, 0, 0, "")
+		wallet := New(testMnemonic, passphrase, name)
 
 		address, err := wallet.ReceiveAddress()
 		assert.NoError(t, err)

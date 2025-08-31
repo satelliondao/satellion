@@ -11,8 +11,8 @@ import (
 	"github.com/satelliondao/satellion/mnemonic/wordlist"
 )
 
-const wordCount = 12
-const wordlistCount = 2048
+const WordCount = 12
+const WordlistSize = 2048
 
 type Mnemonic struct {
 	Words []string
@@ -25,12 +25,12 @@ func New(words []string) Mnemonic {
 }
 
 func NewRandom() *Mnemonic {
-	out := make([]string, wordCount)
-	if wordlistCount != len(wordlist.EnWordList) {
+	out := make([]string, WordCount)
+	if WordlistSize != len(wordlist.EnWordList) {
 		panic("wordlist count mismatch")
 	}
-	max := big.NewInt(wordlistCount)
-	for i := range wordCount {
+	max := big.NewInt(WordlistSize)
+	for i := range WordCount {
 		n, err := rand.Int(rand.Reader, max)
 		if err != nil {
 			panic("failed to generate random index")

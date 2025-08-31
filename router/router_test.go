@@ -12,7 +12,6 @@ import (
 	"github.com/lightninglabs/neutrino/headerfs"
 	"github.com/satelliondao/satellion/config"
 	"github.com/satelliondao/satellion/mnemonic"
-	"github.com/satelliondao/satellion/neutrino"
 	"github.com/satelliondao/satellion/ports"
 	"github.com/satelliondao/satellion/wallet"
 	"github.com/satelliondao/satellion/walletdb"
@@ -90,25 +89,6 @@ func setupTestRouter(t *testing.T) (*Router, string, func()) {
 	return router, tmpDir, cleanup
 }
 
-func TestGetWalletBalance_ChainNotStarted(t *testing.T) {
-	router, _, cleanup := setupTestRouter(t)
-	defer cleanup()
-	balance, err := router.GetWalletBalance("test")
-	assert.Error(t, err)
-	assert.Equal(t, uint64(0), balance)
-	assert.Contains(t, err.Error(), "chain not started")
-}
-
-func TestGetWalletBalance_NoActiveWallet(t *testing.T) {
-	router, _, cleanup := setupTestRouter(t)
-	defer cleanup()
-	router.Chain = &neutrino.ChainService{}
-	balance, err := router.GetWalletBalance("test")
-	assert.Error(t, err)
-	assert.Equal(t, uint64(0), balance)
-	assert.Contains(t, err.Error(), "wallet not found")
-}
-
 func TestGetWalletBalance_Success(t *testing.T) {
 	router, _, cleanup := setupTestRouter(t)
 	defer cleanup()
@@ -117,7 +97,8 @@ func TestGetWalletBalance_Success(t *testing.T) {
 		"abandon", "abandon", "abandon", "abandon", "abandon", "about",
 	}
 	testMnemonic := mnemonic.New(words)
-	testWallet := wallet.New(&testMnemonic, "", "test-wallet", 0, 0, "")
+	testWallet := wallet.New(&testMnemonic, "", "")
+	testWallet.Name = "test-wallet"
 	testWallet.CreatedAt = time.Now().Add(-24 * time.Hour)
 	err := router.WalletRepo.Save(testWallet)
 	assert.NoError(t, err)

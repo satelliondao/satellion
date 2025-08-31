@@ -15,7 +15,7 @@ import (
 
 const passphrase = "test"
 
-func TestNewBalanceScanner(t *testing.T) {
+func TestNewBalanceService(t *testing.T) {
 	mockChain := &MockChainService{}
 	scanner := NewBalanceService(mockChain)
 	assert.NotNil(t, scanner)
@@ -34,7 +34,7 @@ func TestScanWalletBalance_WalletCreatedAtZero(t *testing.T) {
 	wallet.CreatedAt = time.Time{} // Zero time
 	balance, err := scanner.ScanWalletBalanceInfo(wallet)
 	assert.Error(t, err)
-	assert.Equal(t, uint64(0), balance)
+	assert.Nil(t, balance)
 	assert.Contains(t, err.Error(), "wallet creation time not set")
 }
 
@@ -51,7 +51,7 @@ func TestScanWalletBalance_ChainError(t *testing.T) {
 	mockChain.On("BestBlock").Return((*headerfs.BlockStamp)(nil), assert.AnError)
 	balance, err := scanner.ScanWalletBalanceInfo(wallet)
 	assert.Error(t, err)
-	assert.Equal(t, uint64(0), balance)
+	assert.Nil(t, balance)
 	assert.Contains(t, err.Error(), "failed to get best block")
 }
 
@@ -79,10 +79,11 @@ func TestScanWalletBalance_Success(t *testing.T) {
 	mockChain.On("GetBlockHeader", blockHash).Return(blockHeader, nil)
 	var key [16]byte
 	emptyFilter, _ := gcs.BuildGCSFilter(0, 0, key, [][]byte{})
-	mockChain.On("GetCFilter", mock.AnythingOfType("chainhash.Hash"), wire.GCSFilterRegular).Return(emptyFilter, nil)
+	mockChain.On("GetCFilter", mock.AnythingOfType("chainhash.Hash")).Return(emptyFilter, nil)
 	balance, err := scanner.ScanWalletBalanceInfo(wallet)
 	assert.NoError(t, err)
-	assert.Equal(t, uint64(0), balance)
+	assert.NotNil(t, balance)
+	assert.Equal(t, uint64(0), balance.Balance)
 }
 
 func TestFindBlockHeightFromTime_BinarySearch(t *testing.T) {
@@ -109,6 +110,8 @@ func TestGenerateAllAddresses(t *testing.T) {
 	}
 	mnemonic := mnemonic.New(words)
 	wallet := New(&mnemonic, passphrase, "test")
+	wallet.NextReceiveIndex = 3
+	wallet.NextChangeIndex = 3
 	mockChain := &MockChainService{}
 	scanner := NewBalanceService(mockChain)
 	addresses, err := scanner.generateAllAddresses(wallet)
@@ -169,7 +172,7 @@ func TestScanBlockForAddresses_NoMatches(t *testing.T) {
 	mockChain.On("GetBlockHash", int64(100)).Return(blockHash, nil)
 	var key [16]byte
 	emptyFilter, _ := gcs.BuildGCSFilter(0, 0, key, [][]byte{})
-	mockChain.On("GetCFilter", *blockHash, wire.GCSFilterRegular).Return(emptyFilter, nil)
+	mockChain.On("GetCFilter", *blockHash).Return(emptyFilter, nil)
 	scripts := [][]byte{
 		{0x51, 0x20, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f, 0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17, 0x18, 0x19, 0x1a, 0x1b, 0x1c, 0x1d, 0x1e, 0x1f, 0x20},
 	}
@@ -194,7 +197,7 @@ func TestScanBlockForAddresses_GetCFilterError(t *testing.T) {
 	scanner := NewBalanceService(mockChain)
 	blockHash := &chainhash.Hash{}
 	mockChain.On("GetBlockHash", int64(100)).Return(blockHash, nil)
-	mockChain.On("GetCFilter", *blockHash, wire.GCSFilterRegular).Return((*gcs.Filter)(nil), assert.AnError)
+	mockChain.On("GetCFilter", *blockHash).Return((*gcs.Filter)(nil), assert.AnError)
 	scripts := [][]byte{{0x51, 0x20}}
 	matches, err := scanner.scanBlockForAddresses(100, scripts)
 	assert.Error(t, err)
