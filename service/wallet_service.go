@@ -51,6 +51,26 @@ func (s *WalletService) Unlock(passphrase string) error {
 	return nil
 }
 
+func (s *WalletService) ImportWallet(name string, mnemonicPhrase string, passphrase string) error {
+	if name == "" {
+		return fmt.Errorf("invalid wallet data")
+	}
+	validator := mnemonic.NewValidator()
+	if err := validator.Validate(mnemonicPhrase); err != nil {
+		return fmt.Errorf("invalid mnemonic: %v", err)
+	}
+	words := validator.Normalize(mnemonicPhrase)
+	m := mnemonic.New(words)
+	model := wallet.New(&m, passphrase, "")
+	model.Name = name
+	model.CreatedAt = time.Now()
+	err := s.walletRepo.Save(model)
+	if err != nil {
+		return err
+	}
+	return s.walletRepo.SetDefault(name)
+}
+
 func (s *WalletService) WalletRepo() *walletdb.WalletDB {
 	return s.walletRepo
 }

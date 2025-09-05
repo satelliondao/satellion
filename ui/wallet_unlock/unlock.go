@@ -18,8 +18,9 @@ type state struct {
 
 var choices = []framework.Choice{
 	{Label: "Unlock", Value: "unlock"},
-	{Label: "Switch wallet", Value: "switch"},
-	{Label: "Create new wallet", Value: "create"},
+	{Label: "Switch", Value: "switch"},
+	{Label: "Create", Value: "create"},
+	{Label: "Import", Value: "import"},
 }
 
 func New(ctx *framework.AppContext, params interface{}) framework.Page {
@@ -63,6 +64,8 @@ func (m *state) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 						return m, router.SwitchWallet()
 					case "create":
 						return m, router.CreateWallet()
+					case "import":
+						return m, router.ImportWallet()
 					}
 				}
 				return m, nil

@@ -4,6 +4,7 @@ var (
 	Home           = "home"
 	Sync           = "sync"
 	CreateWallet   = "create"
+	ImportWallet   = "import"
 	VerifyMnemonic = "verify"
 	Passphrase     = "passphrase"
 	ListWallets    = "list"

@@ -51,3 +51,7 @@ func UnlockWallet() tea.Cmd {
 func CreateWallet() tea.Cmd {
 	return framework.Navigate(page.CreateWallet)
 }
+
+func ImportWallet() tea.Cmd {
+	return framework.Navigate(page.ImportWallet)
+}

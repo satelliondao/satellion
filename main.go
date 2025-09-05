@@ -13,6 +13,7 @@ import (
 	"github.com/satelliondao/satellion/ui/sync"
 	"github.com/satelliondao/satellion/ui/verify_mnemonic"
 	"github.com/satelliondao/satellion/ui/wallet_create"
+	"github.com/satelliondao/satellion/ui/wallet_import"
 	"github.com/satelliondao/satellion/ui/wallet_list"
 	"github.com/satelliondao/satellion/ui/wallet_switch"
 	"github.com/satelliondao/satellion/ui/wallet_unlock"
@@ -28,6 +29,7 @@ func main() {
 		page.Home:           home.New,
 		page.Sync:           sync.New,
 		page.CreateWallet:   wallet_create.New,
+		page.ImportWallet:   wallet_import.New,
 		page.VerifyMnemonic: verify_mnemonic.New,
 		page.Passphrase:     passphrase.New,
 		page.ListWallets:    wallet_list.New,
