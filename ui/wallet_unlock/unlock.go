@@ -18,9 +18,9 @@ type state struct {
 
 var choices = []framework.Choice{
 	{Label: "Unlock", Value: "unlock"},
-	{Label: "Switch", Value: "switch"},
-	{Label: "Create", Value: "create"},
-	{Label: "Import", Value: "import"},
+	{Label: "↻ Switch", Value: "switch"},
+	{Label: "+ Create", Value: "create"},
+	{Label: "↓ Import", Value: "import"},
 }
 
 func New(ctx *framework.AppContext, params interface{}) framework.Page {
@@ -83,7 +83,7 @@ func (m *state) View() string {
 	if err != nil {
 		v.L("No active wallet found\n")
 	} else {
-		v.L("Enter passphrase to unlock wallet %s\n", color.New(color.Bold).Sprintf("%s", name))
+		v.L("🔒 Wallet Unlock: enter passphrase to unlock wallet %s\n", color.New(color.Bold).Sprintf("%s", name))
 	}
 	v.L(m.input.View())
 	v.Err(m.err)
