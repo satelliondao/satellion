@@ -14,6 +14,7 @@ type state struct {
 	nameInput          textinput.Model
 	nameInputCompleted bool
 	mnemonic           *mnemonic.Mnemonic
+	err                string
 }
 
 func New(ctx *framework.AppContext, params interface{}) framework.Page {
@@ -34,6 +35,10 @@ func (m state) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, tea.Quit
 		case tea.KeyEnter:
 			if m.mnemonic == nil {
+				if m.nameInput.Value() == "" {
+					m.err = "Wallet name cannot be empty"
+					return m, nil
+				}
 				m.nameInputCompleted = true
 				m.mnemonic = mnemonic.NewRandom()
 			} else {
@@ -43,6 +48,9 @@ func (m state) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 		if !m.nameInputCompleted {
 			m.nameInput, cmd = m.nameInput.Update(msg)
+			if m.err != "" {
+				m.err = ""
+			}
 		}
 		return m, cmd
 	}
@@ -53,19 +61,19 @@ func (m state) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 func (m state) View() string {
 	v := framework.View()
 	if m.mnemonic == nil {
-		v.L("Get name for your wallet").
-			L(m.nameInput.View()).
-			Build()
+		v.L("Create new wallet").
+			L(m.nameInput.View())
 	}
 
 	if m.mnemonic != nil {
 		v.L("Wallet name: %s", m.nameInput.Value()).
 			L("\n🔑 %s 🔑\n", m.mnemonic.String()).
-			L(color.New(color.FgHiRed).Sprintf("Write down your private key and keep it in a safe place.")).
-			L("You will be asked to verify it in the next step.").
+			L(color.New(color.FgHiRed).Sprintf("Write down your private key and keep it in a safe place")).
+			L("You will be asked to verify it in the next step").
 			L("Press enter to continue")
 	}
 
+	v.Err(m.err)
 	return v.QuitHint().Build()
 }
 

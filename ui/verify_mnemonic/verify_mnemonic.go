@@ -93,8 +93,7 @@ func (m State) View() string {
 	if m.mnemonic == nil {
 		return "Verify your mnemonic\n\nMnemonic not found. Press Esc to go back."
 	}
-	v.L("Verify your mnemonic").
-		L("Type the requested words to confirm.")
+	v.L("Verify your mnemonic")
 	for i := 0; i < 3; i++ {
 		v.L(m.inputs[i].View())
 	}
@@ -102,7 +101,7 @@ func (m State) View() string {
 		v.L(m.err)
 	}
 	if strings.TrimSpace(m.inputs[2].Value()) != "" {
-		v.L("Press Enter to continue")
+		v.Help("Press Enter to continue")
 	}
 	return v.Build()
 }

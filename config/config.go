@@ -38,6 +38,21 @@ func (c *Config) Load() (*Config, error) {
 	storagePath := getStoragePath()
 	jsonFile, err := os.Open(storagePath)
 	if err != nil {
+		if os.IsNotExist(err) {
+			defaultConfig := &Config{
+				Peers: []string{
+					"seed.bitcoin.sipa.be:8333",
+					"dnsseed.bluematt.me:8333",
+					"dnsseed.bitcoin.dashjr.org:8333",
+				},
+				MinPeers:           5,
+				SyncTimeoutMinutes: 30,
+			}
+			if err := c.Save(defaultConfig); err != nil {
+				return nil, err
+			}
+			return defaultConfig, nil
+		}
 		return nil, err
 	}
 	defer jsonFile.Close()

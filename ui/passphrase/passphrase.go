@@ -24,7 +24,7 @@ func New(ctx *framework.AppContext, p interface{}) framework.Page {
 		m.walletName = props.WalletName
 		m.mnemonic = props.Mnemonic
 	}
-	m.passInput = PassphraseInput("Enter a passphrase (optional)")
+	m.passInput = PassphraseInput("Imagine a passphrase")
 	m.confirm = PassphraseInput("Confirm passphrase")
 	return m
 }
