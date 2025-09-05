@@ -1,8 +1,6 @@
 package home
 
 import (
-	"fmt"
-
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/satelliondao/satellion/stdout"
 	"github.com/satelliondao/satellion/ui/framework"
@@ -22,7 +20,7 @@ type errorMsg struct {
 	err error
 }
 
-var baseMenuItems = []menuItem{
+var Menu = []menuItem{
 	{label: "Syncronize blockchain", page: page.Sync},
 	{label: "Receive", page: page.Receive},
 	{label: "Send", page: page.Send},
@@ -35,8 +33,8 @@ func New(ctx *framework.AppContext, params interface{}) framework.Page {
 }
 
 func (m *state) rebuildMenu() {
-	items := make([]menuItem, 0, len(baseMenuItems)+1)
-	items = append(items, baseMenuItems...)
+	items := make([]menuItem, 0, len(Menu)+1)
+	items = append(items, Menu...)
 	m.items = items
 
 	choices := make([]framework.Choice, len(items))
@@ -79,11 +77,11 @@ func (m *state) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (m *state) View() string {
-	v := framework.NewViewBuilder()
+	v := framework.View()
 	if m.w != nil {
-		v.Line(fmt.Sprintf("Wallet: %s", m.w.Name))
+		v.L("Wallet: %s", m.w.Name)
 	}
-	v.Line(m.selector.Render())
-	v.WithQuitText()
-	return v.Build()
+	return v.L(m.selector.Render()).
+		QuitHint().
+		Build()
 }

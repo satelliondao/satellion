@@ -1,8 +1,6 @@
 package wallet_switch
 
 import (
-	"fmt"
-
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/satelliondao/satellion/stdout"
 	"github.com/satelliondao/satellion/ui/framework"
@@ -71,13 +69,10 @@ func (m *state) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (m *state) View() string {
-	v := framework.NewViewBuilder()
-	v.Line("Switch active wallet")
-	if m.err != "" {
-		v.Line(m.err)
-	}
+	v := framework.View().
+		L("Switch active wallet")
 	if len(m.wallets) == 0 {
-		v.Line("No wallets found")
+		v.L("No wallets found")
 	}
 	for i, w := range m.wallets {
 		cursor := " "
@@ -88,7 +83,9 @@ func (m *state) View() string {
 		if w.Name == m.active {
 			label += " (active)"
 		}
-		v.Line(fmt.Sprintf("%s %s", cursor, label))
+		v.L("%s %s", cursor, label)
 	}
-	return v.Build()
+	return v.Err(m.err).
+		QuitHint().
+		Build()
 }

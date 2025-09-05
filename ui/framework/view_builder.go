@@ -13,7 +13,7 @@ type ViewBuilder struct {
 	quitText bool
 }
 
-func NewViewBuilder() *ViewBuilder {
+func View() *ViewBuilder {
 	b := &ViewBuilder{
 		v: "",
 	}
@@ -32,23 +32,28 @@ func (b *ViewBuilder) withLogo() *ViewBuilder {
 	return b
 }
 
-func (b *ViewBuilder) Line(s string) *ViewBuilder {
-	b.v += fmt.Sprintf("%s\n", s)
+func (b *ViewBuilder) L(format string, args ...interface{}) *ViewBuilder {
+	b.v += fmt.Sprintf(format+"\n", args...)
 	return b
 }
 
-func (b *ViewBuilder) WithHelpText(s string) *ViewBuilder {
+func (b *ViewBuilder) Warn(format string, args ...interface{}) *ViewBuilder {
+	b.v += color.New(color.FgYellow).Sprintf(format+"\n", args...)
+	return b
+}
+
+func (b *ViewBuilder) Help(s string) *ViewBuilder {
 	b.helpText += fmt.Sprintln(s)
 	return b
 }
 
-func (b *ViewBuilder) WithQuitText() *ViewBuilder {
+func (b *ViewBuilder) QuitHint() *ViewBuilder {
 	b.quitText = true
 	return b
 }
 
-func (b *ViewBuilder) WithErrText(s string) *ViewBuilder {
-	b.errText = s
+func (b *ViewBuilder) Err(err string) *ViewBuilder {
+	b.errText = err
 	return b
 }
 

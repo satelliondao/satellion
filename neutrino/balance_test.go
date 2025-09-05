@@ -22,7 +22,7 @@ var words = []string{
 }
 var seed = mnemonic.New(words)
 
-func setupTest() (*MockChainService, *Balance) {
+func setupTest() (*MockChainService, *BalanceService) {
 	mockChain := &MockChainService{}
 	scanner := NewBalance(mockChain)
 	return mockChain, scanner
@@ -101,7 +101,7 @@ func TestGenerateAllAddresses(t *testing.T) {
 	w := wallet.New(&seed, passphrase, "test")
 	w.NextReceiveIndex = 3
 	w.NextChangeIndex = 3
-	addresses, err := scanner.generateAllAddresses(w)
+	addresses, err := scanner.DeriveAddressSpace(w)
 	assert.NoError(t, err)
 	expectedCount := (3 + 1) * 2 // (max receive index + 1) * 2 (receive + change)
 	assert.Equal(t, expectedCount, len(addresses))
@@ -122,7 +122,7 @@ func TestGenerateAllAddresses_ZeroIndices(t *testing.T) {
 	w := wallet.New(&seed, passphrase, "test")
 	chain := &MockChainService{}
 	scanner := NewBalance(chain)
-	addresses, err := scanner.generateAllAddresses(w)
+	addresses, err := scanner.DeriveAddressSpace(w)
 	assert.NoError(t, err)
 	expectedCount := 21 * 2 // Default 20 addresses + index 0, both receive and change
 	assert.Equal(t, expectedCount, len(addresses))
@@ -132,7 +132,7 @@ func TestAddressesToScripts(t *testing.T) {
 	w := wallet.New(&seed, passphrase, "test")
 	chain := &MockChainService{}
 	scanner := NewBalance(chain)
-	addresses, err := scanner.generateAllAddresses(w)
+	addresses, err := scanner.DeriveAddressSpace(w)
 	assert.NoError(t, err)
 	scripts, err := scanner.addressesToScripts(addresses)
 	assert.NoError(t, err)

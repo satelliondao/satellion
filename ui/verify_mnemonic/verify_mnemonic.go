@@ -89,20 +89,20 @@ func (m State) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (m State) View() string {
-	v := framework.NewViewBuilder()
+	v := framework.View()
 	if m.mnemonic == nil {
 		return "Verify your mnemonic\n\nMnemonic not found. Press Esc to go back."
 	}
-	v.Line("Verify your mnemonic")
-	v.Line("Type the requested words to confirm.")
+	v.L("Verify your mnemonic").
+		L("Type the requested words to confirm.")
 	for i := 0; i < 3; i++ {
-		v.Line(m.inputs[i].View())
+		v.L(m.inputs[i].View())
 	}
 	if m.err != "" {
-		v.Line(m.err)
+		v.L(m.err)
 	}
 	if strings.TrimSpace(m.inputs[2].Value()) != "" {
-		v.Line("Press Enter to continue")
+		v.L("Press Enter to continue")
 	}
 	return v.Build()
 }

@@ -1,8 +1,6 @@
 package wallet_unlock
 
 import (
-	"fmt"
-
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/fatih/color"
@@ -77,16 +75,16 @@ func (m *state) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (m *state) View() string {
-	v := framework.NewViewBuilder()
+	v := framework.View()
 	name, err := m.ctx.WalletRepo.GetActiveWalletName()
 	if err != nil {
-		v.Line("No active wallet found\n")
+		v.L("No active wallet found\n")
 	} else {
-		v.Line(fmt.Sprintf("Enter passphrase to unlock wallet %s\n", color.New(color.Bold).Sprintf("%s", name)))
+		v.L("Enter passphrase to unlock wallet %s\n", color.New(color.Bold).Sprintf("%s", name))
 	}
-	v.Line(m.input.View())
-	v.WithErrText(m.err)
-	v.Line("")
-	v.Line(m.selector.RenderWithPrefix("▶"))
+	v.L(m.input.View())
+	v.Err(m.err)
+	v.L("")
+	v.L(m.selector.RenderWithPrefix("▶"))
 	return v.Build()
 }

@@ -34,7 +34,7 @@ func (m *state) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (m *state) View() string {
-	v := framework.NewViewBuilder()
-	v.Line("Send")
+	v := framework.View()
+	v.L("Send")
 	return v.Build()
 }

@@ -8,7 +8,7 @@ import (
 	"github.com/satelliondao/satellion/ui/router"
 )
 
-type State struct {
+type state struct {
 	ctx        *framework.AppContext
 	passInput  textinput.Model
 	confirm    textinput.Model
@@ -19,7 +19,7 @@ type State struct {
 }
 
 func New(ctx *framework.AppContext, p interface{}) framework.Page {
-	m := State{ctx: ctx}
+	m := state{ctx: ctx}
 	if props, ok := p.(*router.VerifyMnemonicProps); ok {
 		m.walletName = props.WalletName
 		m.mnemonic = props.Mnemonic
@@ -40,12 +40,12 @@ func PassphraseInput(placeholder string) textinput.Model {
 	return in
 }
 
-func (m State) Init() tea.Cmd {
+func (m state) Init() tea.Cmd {
 	m.passInput.Focus()
 	return textinput.Blink
 }
 
-func (m State) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+func (m state) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var cmd tea.Cmd
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
@@ -70,7 +70,7 @@ func (m State) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return m, cmd
 }
 
-func (m State) handleConfirmInput() (tea.Model, tea.Cmd) {
+func (m state) handleConfirmInput() (tea.Model, tea.Cmd) {
 	if m.confirm.Value() != m.passInput.Value() {
 		m.err = "Passphrases do not match."
 		return m, nil
@@ -83,15 +83,16 @@ func (m State) handleConfirmInput() (tea.Model, tea.Cmd) {
 	return m, router.Home()
 }
 
-func (m State) View() string {
-	v := framework.NewViewBuilder()
+func (m state) View() string {
+	v := framework.View()
 	if m.confirming {
-		v.Line("Confirm your passphrase:")
-		v.Line(m.confirm.View())
+		v.L("Confirm your passphrase:").
+			L(m.confirm.View())
 	} else {
-		v.Line("Enter a passphrase (optional):")
-		v.Line(m.passInput.View())
+		v.L("Enter a passphrase (optional):").
+			L(m.passInput.View())
 	}
-	v.WithErrText(m.err)
-	return v.Build()
+	return v.Err(m.err).
+		QuitHint().
+		Build()
 }

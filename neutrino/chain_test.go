@@ -12,7 +12,6 @@ import (
 )
 
 const TestBlockHeight = 879614
-
 const TestAddress = "bc1pj587y3psgrlsyfsqzmgsy6yun2atpgkwzu03e4lfhm6a2juqchdqyd2g45"
 
 func TestGetCompactFilter(t *testing.T) {
@@ -37,7 +36,7 @@ func TestGetCompactFilter(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	address, err := btcutil.DecodeAddress("bc1pj587y3psgrlsyfsqzmgsy6yun2atpgkwzu03e4lfhm6a2juqchdqyd2g45", &chaincfg.MainNetParams)
+	address, err := btcutil.DecodeAddress(TestAddress, &chaincfg.MainNetParams)
 	if err != nil {
 		t.Fatal(err)
 	}

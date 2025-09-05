@@ -1,8 +1,6 @@
 package balance
 
 import (
-	"fmt"
-
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/fatih/color"
 	"github.com/satelliondao/satellion/neutrino"
@@ -79,41 +77,21 @@ func (s *State) Update(msg tea.Msg) tea.Cmd {
 	return nil
 }
 
-func (s *State) IsScanning() bool {
-	return s.status == BalanceScanning
-}
-
-func (s *State) IsComplete() bool {
-	return s.status == BalanceComplete
-}
-
-func (s *State) HasError() bool {
-	return s.status == BalanceError
-}
-
-func (s *State) GetInfo() *neutrino.BalanceInfo {
-	return s.info
-}
-
-func (s *State) GetError() error {
-	return s.err
-}
-
 func (s *State) View() string {
-	v := framework.NewViewBuilder().HideLogo()
+	v := framework.View().HideLogo()
 	switch s.status {
 	case BalanceScanning:
-		v.Line(fmt.Sprintf("Scanning... %.1f%%", s.progress))
+		v.L("Scanning... %.1f%%", s.progress)
 	case BalanceError:
-		v.Line(color.New(color.FgRed).Sprintf("Error: %v", s.err))
+		v.L(color.New(color.FgRed).Sprintf("Error: %v", s.err))
 	case BalanceComplete:
 		if s.info != nil {
-			v.Line(fmt.Sprintf("%d sats, %d UTXOs", s.info.Balance, s.info.UtxoCount))
+			v.L("%d sats, %d UTXOs", s.info.Balance, s.info.UtxoCount)
 		} else {
-			v.Line(color.New(color.FgRed).Sprintf("No balance information available"))
+			v.Err("No balance information available")
 		}
 	default:
-		v.Line(color.New(color.FgHiBlack).Sprintf("Balance not loaded"))
+		v.Err("Balance not loaded")
 	}
 	return v.Build()
 }
@@ -130,11 +108,5 @@ func (s *State) scanBalance() tea.Cmd {
 			return balanceCompleteMsg{err: err}
 		}
 		return balanceCompleteMsg{info: info, err: err}
-	}
-}
-
-func (s *State) SendProgress(progress float64) tea.Cmd {
-	return func() tea.Msg {
-		return balanceProgressMsg{progress: progress}
 	}
 }

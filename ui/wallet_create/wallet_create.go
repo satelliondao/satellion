@@ -1,8 +1,6 @@
 package wallet_create
 
 import (
-	"fmt"
-
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/fatih/color"
@@ -53,22 +51,22 @@ func (m state) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (m state) View() string {
-	v := framework.NewViewBuilder()
+	v := framework.View()
 	if m.mnemonic == nil {
-		v.Line("Get name for your wallet")
-		v.Line(m.nameInput.View())
-		return v.Build()
+		v.L("Get name for your wallet").
+			L(m.nameInput.View()).
+			Build()
 	}
 
 	if m.mnemonic != nil {
-		v.Line(fmt.Sprintf("Wallet name: %s", m.nameInput.Value()))
-		v.Line(fmt.Sprintf("\n🔑 %s 🔑\n", m.mnemonic.String()))
-		v.Line(color.New(color.FgHiRed).Sprintf("Write down your private key and keep it in a safe place."))
-		v.Line("You will be asked to verify it in the next step.")
-		v.Line("Press enter to continue")
+		v.L("Wallet name: %s", m.nameInput.Value()).
+			L("\n🔑 %s 🔑\n", m.mnemonic.String()).
+			L(color.New(color.FgHiRed).Sprintf("Write down your private key and keep it in a safe place.")).
+			L("You will be asked to verify it in the next step.").
+			L("Press enter to continue")
 	}
 
-	return v.WithQuitText().Build()
+	return v.QuitHint().Build()
 }
 
 func nameInput() textinput.Model {

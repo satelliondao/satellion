@@ -1,8 +1,6 @@
 package wallet_list
 
 import (
-	"fmt"
-
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/satelliondao/satellion/stdout"
 	"github.com/satelliondao/satellion/ui/framework"
@@ -45,7 +43,7 @@ func (m *state) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (m *state) View() string {
-	v := framework.NewViewBuilder()
+	v := framework.View()
 
 	for i, w := range m.wallets {
 		mn, err := m.ctx.WalletRepo.Get(w.Name, "")
@@ -53,13 +51,13 @@ func (m *state) View() string {
 		if err == nil {
 			mnemonicText = mn.Mnemonic.String()
 		}
-		v.Line(fmt.Sprintf("%d. %s\n   %s\n", i+1, w.Name, mnemonicText))
+		v.L("%d. %s\n   %s\n", i+1, w.Name, mnemonicText)
 	}
 
 	if len(m.wallets) == 0 {
-		v.Line("No wallets found")
+		v.L("No wallets found")
 	}
 
-	v.WithQuitText()
+	v.QuitHint()
 	return v.Build()
 }

@@ -100,26 +100,12 @@ func (s *Chain) Syncronize() error {
 	signal.Notify(sigCh, os.Interrupt, syscall.SIGTERM)
 	ticker := time.NewTicker(1 * time.Second)
 	defer ticker.Stop()
+
 	for {
 		select {
 		case <-ticker.C:
-			stamp, err := s.neutrino.BestBlock()
-			if err != nil {
-				continue
-			}
-			if int(s.neutrino.ConnectedCount()) >= s.config.MinPeers {
-				isCurrent := false
-				type isCurrentCap interface{ IsCurrent() bool }
-				if v, ok := interface{}(s.neutrino).(isCurrentCap); ok {
-					isCurrent = v.IsCurrent()
-				} else {
-					if time.Since(stamp.Timestamp) < time.Duration(s.config.SyncTimeoutMinutes)*time.Minute {
-						isCurrent = true
-					}
-				}
-				if isCurrent {
-					return nil
-				}
+			if s.isChainSynchronized() {
+				return nil
 			}
 		case <-sigCh:
 			fmt.Println("shutting down...")
@@ -136,4 +122,19 @@ func (s *Chain) Stop() {
 	if s.neutrino != nil {
 		s.neutrino.Stop()
 	}
+}
+
+func (s *Chain) isChainSynchronized() bool {
+	stamp, err := s.neutrino.BestBlock()
+	if err != nil {
+		return false
+	}
+	if int(s.neutrino.ConnectedCount()) < s.config.MinPeers {
+		return false
+	}
+	type isCurrentCap interface{ IsCurrent() bool }
+	if v, ok := interface{}(s.neutrino).(isCurrentCap); ok {
+		return v.IsCurrent()
+	}
+	return time.Since(stamp.Timestamp) < time.Duration(s.config.SyncTimeoutMinutes)*time.Minute
 }

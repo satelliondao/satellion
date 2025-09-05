@@ -1,7 +1,6 @@
 package sync
 
 import (
-	"fmt"
 	"time"
 
 	tea "github.com/charmbracelet/bubbletea"
@@ -88,18 +87,18 @@ func (s *state) tick() tea.Cmd {
 }
 
 func (s *state) View() string {
-	v := framework.NewViewBuilder()
-	v.Line(color.New(color.FgHiBlue).Sprintf("Blockchain Sync"))
-	v.Line(fmt.Sprintf("Height: %d", s.height))
-	v.Line(fmt.Sprintf("Peers: %d", s.peers))
-	v.Line(fmt.Sprintf("Last block: %s", s.timestamp.Format("15:04:05")))
-	v.Line("")
+	v := framework.View().
+		L(color.New(color.FgHiBlue).Sprintf("Blockchain Sync")).
+		L("Height: %d", s.height).
+		L("Peers: %d", s.peers).
+		L("Last block: %s", s.timestamp.Format("15:04:05")).
+		L("")
 	if s.isComplete {
-		v.Line(color.New(color.FgGreen).Sprintf("✓ Synced"))
-		v.Line(s.balance.View())
-		v.WithHelpText("R to rescan")
+		v.L(color.New(color.FgGreen).Sprintf("✓ Synced")).
+			L(s.balance.View()).
+			Help("R to rescan")
 	} else {
-		v.Line(color.New(color.FgYellow).Sprintf("⏳ Syncing..."))
+		v.Warn("⏳ Syncing...")
 	}
-	return v.WithQuitText().Build()
+	return v.QuitHint().Build()
 }

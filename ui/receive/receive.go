@@ -79,13 +79,13 @@ func (s *state) regenerateAddress() tea.Cmd {
 }
 
 func (s *state) View() string {
-	v := framework.NewViewBuilder()
-	v.Line("Address:")
-	v.Line(color.New(color.FgGreen).Sprintf(s.address.Address.String()))
-	v.Line(fmt.Sprintf("Derivation Index: %d", s.address.DeriviationIndex))
-	v.Line("")
-	v.WithErrText(s.err)
-	v.WithHelpText("R to generate new address")
-	v.WithQuitText()
-	return v.Build()
+	return framework.View().
+		L("Address:").
+		L(color.New(color.FgGreen).Sprintf(s.address.Address.String())).
+		L("Derivation Index: %d", s.address.DeriviationIndex).
+		L("").
+		Err(s.err).
+		Help("R to generate new address").
+		QuitHint().
+		Build()
 }
