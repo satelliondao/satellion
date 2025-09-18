@@ -6,7 +6,6 @@ import (
 
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/fatih/color"
-	"github.com/satelliondao/satellion/stdout"
 	"github.com/satelliondao/satellion/ui/framework"
 	"github.com/satelliondao/satellion/ui/router"
 	"github.com/satelliondao/satellion/wallet"
@@ -45,17 +44,16 @@ func (s *state) Init() tea.Cmd {
 }
 
 func (s *state) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+	nav := framework.HandleNav(msg, router.Home())
+	if nav != nil {
+		return s, nav
+	}
+
 	switch v := msg.(type) {
 	case errorMsg:
 		s.err = v.err
 		return s, nil
 	case tea.KeyMsg:
-		if stdout.ShouldQuit(v) {
-			return s, tea.Quit
-		}
-		if v.Type == tea.KeyEsc {
-			return s, router.Home()
-		}
 		if strings.ToLower(v.String()) == "r" {
 			return s, s.regenerateAddress()
 		}

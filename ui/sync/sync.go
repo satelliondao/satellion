@@ -6,7 +6,6 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/fatih/color"
 	"github.com/satelliondao/satellion/neutrino"
-	"github.com/satelliondao/satellion/stdout"
 	"github.com/satelliondao/satellion/ui/balance"
 	"github.com/satelliondao/satellion/ui/framework"
 	"github.com/satelliondao/satellion/ui/router"
@@ -40,13 +39,14 @@ func (s *state) Init() tea.Cmd {
 }
 
 func (s *state) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
-	var cmd tea.Cmd
+	nav := framework.HandleNav(msg, router.Home())
+	if nav != nil {
+		return s, nav
+	}
 
+	var cmd tea.Cmd
 	switch v := msg.(type) {
 	case tea.KeyMsg:
-		if stdout.ShouldQuit(v) || v.Type == tea.KeyEsc {
-			return s, router.Home()
-		}
 		if s.isComplete && v.String() == "r" {
 			return s, s.balance.StartScan()
 		}
@@ -91,7 +91,7 @@ func (s *state) View() string {
 		L(color.New(color.FgHiBlue).Sprintf("Blockchain Sync")).
 		L("Height: %d", s.height).
 		L("Peers: %d", s.peers).
-		L("Last block: %s", s.timestamp.Format("15:04:05")).
+		L("Last block: %s", s.timestamp.Local()).
 		L("")
 	if s.isComplete {
 		v.L(color.New(color.FgGreen).Sprintf("✓ Synced")).

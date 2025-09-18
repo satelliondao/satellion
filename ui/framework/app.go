@@ -23,6 +23,19 @@ func NavigateWithParams[T any](to string, params T) tea.Cmd {
 	return func() tea.Msg { return NavigateMsg{To: to, Params: params} }
 }
 
+func HandleNav(msg tea.Msg, home tea.Cmd) tea.Cmd {
+	switch v := msg.(type) {
+	case tea.KeyMsg:
+		if v.Type == tea.KeyCtrlC {
+			return tea.Quit
+		}
+		if v.Type == tea.KeyEsc {
+			return home
+		}
+	}
+	return nil
+}
+
 type App struct {
 	ctx     *AppContext
 	pages   map[string]PageFactory

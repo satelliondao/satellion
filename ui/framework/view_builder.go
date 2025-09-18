@@ -66,7 +66,7 @@ func (b *ViewBuilder) Build() string {
 		v += color.New(color.FgHiBlack).Sprintln(b.helpText)
 	}
 	if b.quitText {
-		v += color.New(color.FgHiBlack).Sprintln("Esc to go home. Ctrl+C to exit")
+		v += color.New(color.FgHiBlack).Sprintln("\nESC to go home. CTRL+C to exit.")
 	}
 	return v
 }

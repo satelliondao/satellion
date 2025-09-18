@@ -2,9 +2,9 @@ package home
 
 import (
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/satelliondao/satellion/stdout"
 	"github.com/satelliondao/satellion/ui/framework"
 	"github.com/satelliondao/satellion/ui/page"
+	"github.com/satelliondao/satellion/ui/router"
 	"github.com/satelliondao/satellion/wallet"
 )
 
@@ -59,19 +59,15 @@ func (m *state) Init() tea.Cmd {
 }
 
 func (m *state) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+	nav := framework.HandleNav(msg, router.Home())
+	if nav != nil {
+		return m, nav
+	}
+
 	result := m.selector.Update(msg)
 	// Handle selection results
 	if result.Action == framework.ActionSelection && result.Selected != nil {
 		return m, framework.Navigate(result.Selected.Value.(string))
-	}
-	// Handle other key messages if not consumed by selector
-	if !result.Consumed {
-		switch v := msg.(type) {
-		case tea.KeyMsg:
-			if stdout.ShouldQuit(v) {
-				return m, tea.Quit
-			}
-		}
 	}
 	return m, nil
 }

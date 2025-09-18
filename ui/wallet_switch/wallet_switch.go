@@ -2,7 +2,6 @@ package wallet_switch
 
 import (
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/satelliondao/satellion/stdout"
 	"github.com/satelliondao/satellion/ui/framework"
 	"github.com/satelliondao/satellion/ui/router"
 	"github.com/satelliondao/satellion/wallet"
@@ -35,11 +34,13 @@ func (m *state) Init() tea.Cmd {
 }
 
 func (m *state) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+	nav := framework.HandleNav(msg, router.UnlockWallet())
+	if nav != nil {
+		return m, nav
+	}
+
 	switch v := msg.(type) {
 	case tea.KeyMsg:
-		if stdout.ShouldQuit(v) {
-			return m, tea.Quit
-		}
 		switch v.String() {
 		case "up", "k":
 			if m.cursor > 0 {

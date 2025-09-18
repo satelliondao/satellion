@@ -26,13 +26,15 @@ func (m state) Init() tea.Cmd {
 }
 
 func (m state) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
-	var cmd tea.Cmd
+	nav := framework.HandleNav(msg, router.UnlockWallet())
+	if nav != nil {
+		return m, nav
+	}
 
+	var cmd tea.Cmd
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		switch msg.Type {
-		case tea.KeyCtrlC, tea.KeyEsc:
-			return m, tea.Quit
 		case tea.KeyEnter:
 			if m.mnemonic == nil {
 				if m.nameInput.Value() == "" {

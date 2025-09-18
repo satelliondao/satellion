@@ -2,7 +2,6 @@ package send
 
 import (
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/satelliondao/satellion/stdout"
 	"github.com/satelliondao/satellion/ui/framework"
 	"github.com/satelliondao/satellion/ui/router"
 )
@@ -21,15 +20,11 @@ func (m *state) Init() tea.Cmd {
 }
 
 func (m *state) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
-	switch v := msg.(type) {
-	case tea.KeyMsg:
-		if stdout.ShouldQuit(v) {
-			return m, tea.Quit
-		}
-		if v.Type == tea.KeyEsc {
-			return m, router.Home()
-		}
+	nav := framework.HandleNav(msg, router.Home())
+	if nav != nil {
+		return m, nav
 	}
+
 	return m, nil
 }
 

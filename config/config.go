@@ -25,12 +25,15 @@ func getStoragePath() string {
 	return filepath.Join(homeDir, ".satellion", "config.json")
 }
 
-func (c *Config) setDefaults() {
-	if c.MinPeers == 0 {
-		c.MinPeers = 5
-	}
-	if c.SyncTimeoutMinutes == 0 {
-		c.SyncTimeoutMinutes = 30
+func defaultConfig() *Config {
+	return &Config{
+		Peers: []string{
+			"seed.bitcoin.sipa.be:8333",
+			"dnsseed.bluematt.me:8333",
+			"dnsseed.bitcoin.dashjr.org:8333",
+		},
+		MinPeers:           3,
+		SyncTimeoutMinutes: 30,
 	}
 }
 
@@ -39,19 +42,11 @@ func (c *Config) Load() (*Config, error) {
 	jsonFile, err := os.Open(storagePath)
 	if err != nil {
 		if os.IsNotExist(err) {
-			defaultConfig := &Config{
-				Peers: []string{
-					"seed.bitcoin.sipa.be:8333",
-					"dnsseed.bluematt.me:8333",
-					"dnsseed.bitcoin.dashjr.org:8333",
-				},
-				MinPeers:           5,
-				SyncTimeoutMinutes: 30,
-			}
-			if err := c.Save(defaultConfig); err != nil {
+			с := defaultConfig()
+			if err := c.Save(с); err != nil {
 				return nil, err
 			}
-			return defaultConfig, nil
+			return с, nil
 		}
 		return nil, err
 	}
@@ -63,7 +58,6 @@ func (c *Config) Load() (*Config, error) {
 	if err != nil {
 		return nil, err
 	}
-	config.setDefaults()
 	return &config, nil
 }
 
